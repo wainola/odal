@@ -43,7 +43,7 @@ program.command('status').action(() => {
   console.log('cwd', process.cwd());
   console.log('process.env', process.env);
 });
-
+<
 program.command('test:connection').action(() => {
   Database.connect();
   Database.testConnection()
