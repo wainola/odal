@@ -2,7 +2,7 @@
   "name": "odal",
   "version": "0.0.1",
   "description": "migraton tool that resembles goose",
-  "main": "index.js",
+  "main": "./src/index.js",
   "scripts": {
     "test": "jest --watchAll"
   },
@@ -10,7 +10,9 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^2.19.0",
-    "moment": "^2.24.0"
+    "dotenv": "^6.2.0",
+    "moment": "^2.24.0",
+    "pg": "^7.8.2"
   },
   "devDependencies": {
     "jest": "^24.3.1",
@@ -24,5 +26,5 @@
     "prettier": "^1.16.4"
   },
   "preferGlobal": true,
-  "bin": "/src/index.js"
+  "bin": "./src/index.js"
 }

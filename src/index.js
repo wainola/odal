@@ -3,7 +3,7 @@ const program = require('commander');
 const moment = require('moment');
 const { promisify } = require('util');
 const fs = require('fs');
-const Database = require('../services/database');
+const Database = require('./services/database');
 const Utils = require('./utils');
 
 // FUNCTIONS TO USE AND PROMISIFY
@@ -15,10 +15,10 @@ program.description('Migration tool');
 
 const { NODE_ENV } = process.env;
 
-const urzaIndexPath =
+const odalIndexPath =
   NODE_ENV !== 'development'
-    ? `${process.cwd()}/api/migrations/registry/urza_index`
-    : `${process.cwd()}/migrations/registry/urza_index`;
+    ? `${process.cwd()}/api/migrations/registry/odal_index`
+    : `${process.cwd()}/migrations/registry/odal_index`;
 
 const fileDirectory =
   NODE_ENV !== 'development'
@@ -31,17 +31,25 @@ const registryPath =
     ? `${process.cwd()}/api/migrations/registry`
     : `${process.cwd()}/migrations/registry`;
 
-const urzaIndexExists = fs.existsSync(urzaIndexPath);
+const odalIndexExists = fs.existsSync(odalIndexPath);
 
 // GET VERSION
 program.command('version').action(() => {
-  console.log('Urza linux version 1.0.0');
+  console.log('odal linux version 1.0.0');
 });
 
 // GET STATUS OF MIGRATIONS
 program.command('status').action(() => {
   console.log('cwd', process.cwd());
   console.log('process.env', process.env);
+});
+
+program.command('test:connection').action(() => {
+  Database.connect();
+  Database.testConnection()
+    .then(data => console.log('Successfull connection to the database', data))
+    .then(() => process.exit(1))
+    .catch(error => console.log('Error on connecting to the database', error));
 });
 
 // CREATE MIGRATIONS
@@ -61,34 +69,34 @@ program.command('create <tableName> [fields...]').action(async (tableName, field
       console.log(`Migration file for ${tableName} created!`);
     })
     .then(async () => {
-      const existsUrzaIndex = urzaIndexExists;
+      const existsodalIndex = odalIndexExists;
 
-      // IF URZA INDEX DOESNT EXITS WE CREATED AND WRITE TO THE INDEX
-      if (!existsUrzaIndex) {
+      // IF odal INDEX DOESNT EXITS WE CREATED AND WRITE TO THE INDEX
+      if (!existsodalIndex) {
         try {
-          const urzaIndexResult = await writeFile(urzaIndexPath, filename, { flag: 'wx' });
-          return urzaIndexResult;
+          const odalIndexResult = await writeFile(odalIndexPath, filename, { flag: 'wx' });
+          return odalIndexResult;
         } catch (error) {
-          console.log('error on writing the non existing urza file');
+          console.log('error on writing the non existing odal file');
           return error;
         }
       }
 
-      // IF URZA INDEX ALREADY EXISTS, WE WRITE ON IT
+      // IF odal INDEX ALREADY EXISTS, WE WRITE ON IT
       try {
-        const fileR = await readFile(urzaIndexPath, 'utf8')
+        const fileR = await readFile(odalIndexPath, 'utf8')
           .then(data => {
             const newDataToWrite = `${data}\n${filename}`;
             return newDataToWrite;
           })
           .then(async dataWroted => {
-            const writeToUrza = await writeFile(urzaIndexPath, dataWroted);
-            return writeToUrza;
+            const writeToodal = await writeFile(odalIndexPath, dataWroted);
+            return writeToodal;
           });
 
         return fileR;
       } catch (error) {
-        console.log('Error writing urza index', error);
+        console.log('Error writing odal index', error);
         return error;
       }
     })
@@ -99,16 +107,16 @@ program.command('create <tableName> [fields...]').action(async (tableName, field
 
 // RUN ALL MIGRATION
 program.command('migrate').action(() => {
-  const existsUrzaIndex = urzaIndexExists;
+  const existsodalIndex = odalIndexExists;
 
-  if (!existsUrzaIndex) {
+  if (!existsodalIndex) {
     console.log('No migrations to run');
 
     process.exit(1);
   }
 
   // READ THE MIGRATIONS FILE => READING THE INDEX, APPENDING THE .JS AND CALLING THE READFILE
-  readFile(`${fileDirectory}/urza_index`, 'utf8')
+  readFile(`${fileDirectory}/odal_index`, 'utf8')
     .then(dataRead => {
       console.log(dataRead.split('\n'));
       const filenames = dataRead.split('\n');
@@ -151,7 +159,7 @@ program.command('migrate').action(() => {
       }
     })
     .catch(err => {
-      console.log('Error on reading the urza index', err);
+      console.log('Error on reading the odal index', err);
       process.exit(1);
     });
 });
@@ -159,13 +167,13 @@ program.command('migrate').action(() => {
 // RUN THE LATEST MIGRATION
 program.command('migrate:last').action(() => {
   Database.connect();
-  if (!urzaIndexExists) {
+  if (!odalIndexExists) {
     console.log('No migrations to run');
 
     process.exit(1);
   }
 
-  readFile(`${urzaIndexPath}`, 'utf8')
+  readFile(`${odalIndexPath}`, 'utf8')
     .then(async dataFile => {
       const filenames = dataFile.split('\n');
       const lastMigration = filenames.pop();
@@ -200,28 +208,28 @@ program.command('migrate:last').action(() => {
 
 // REMOVE LAST MIGRATION
 program.command('remove:last').action(() => {
-  if (!urzaIndexExists) {
+  if (!odalIndexExists) {
     console.log('No migrations to run');
 
     process.exit(1);
   }
 
-  readFile(`${urzaIndexPath}`, 'utf8')
+  readFile(`${odalIndexPath}`, 'utf8')
     .then(async datafile => {
       const lastMigration = datafile.split('\n').pop();
 
-      const newUrzaIndexContent = datafile
+      const newodalIndexContent = datafile
         .split('\n')
         .filter(item => item !== lastMigration)
         .join('\n');
       console.log('lastMigration', lastMigration);
-      console.log('new urza index content', newUrzaIndexContent);
+      console.log('new odal index content', newodalIndexContent);
 
       try {
-        const writeToIndex = await writeFile(`${urzaIndexPath}`, newUrzaIndexContent);
-        console.log('Urza index updated!');
+        const writeToIndex = await writeFile(`${odalIndexPath}`, newodalIndexContent);
+        console.log('odal index updated!');
       } catch (err) {
-        console.log('Some error on updating the urza file', err);
+        console.log('Some error on updating the odal file', err);
       }
       return lastMigration;
     })
@@ -253,13 +261,13 @@ program.command('remove:last').action(() => {
 
 // REMOVE ALL THE MIGRATIONS FILE AND THE INDEX
 program.command('remove:all').action(async () => {
-  const urzaIndexExists = fs.existsSync(urzaIndexPath);
-  if (!urzaIndexExists) {
-    console.log('There is no urza index. Exiting');
+  const odalIndexExists = fs.existsSync(odalIndexPath);
+  if (!odalIndexExists) {
+    console.log('There is no odal index. Exiting');
     process.exit(1);
   }
 
-  readFile(`${registryPath}/urza_index`, 'utf-8')
+  readFile(`${registryPath}/odal_index`, 'utf-8')
     .then(result => {
       const filenames = result.split('\n');
       const tableNames = filenames.map(item => item.split('_')[1]);
@@ -288,8 +296,8 @@ program.command('remove:all').action(async () => {
     })
     // .then(async () => {
     //   try {
-    //     const result = await unlink(`${urzaIndexPath}`);
-    //     console.log('Success deletion of urza index');
+    //     const result = await unlink(`${odalIndexPath}`);
+    //     console.log('Success deletion of odal index');
     //   } catch (e) {
     //     console.log('Some error happened', e);
     //   }
