@@ -18,18 +18,18 @@ const { NODE_ENV } = process.env;
 const odalIndexPath =
   NODE_ENV !== 'development'
     ? `${process.cwd()}/api/migrations/registry/odal_index`
-    : `${process.cwd()}/migrations/registry/odal_index`;
+    : `${process.cwd()}/src/registry/odal_index`;
 
 const fileDirectory =
   NODE_ENV !== 'development'
     ? `${process.cwd()}/api/migrations/registry`
-    : `${process.cwd()}/migrations/registry`;
+    : `${process.cwd()}/src/registry`;
 
 // CHECK IF DIRECTORIES EXISTS. IF NOT, CREATE THEM
 const registryPath =
   NODE_ENV !== 'development'
     ? `${process.cwd()}/api/migrations/registry`
-    : `${process.cwd()}/migrations/registry`;
+    : `${process.cwd()}/src/registry`;
 
 const odalIndexExists = fs.existsSync(odalIndexPath);
 
@@ -43,7 +43,7 @@ program.command('status').action(() => {
   console.log('cwd', process.cwd());
   console.log('process.env', process.env);
 });
-<
+
 program.command('test:connection').action(() => {
   Database.connect();
   Database.testConnection()
