@@ -9,15 +9,15 @@ class Odal {
 
   static async create(tableName, fields) {
     console.log('CREATE!', tableName, fields);
-    // const mappedFields = await Utils.mapFields(fields);
+    const mappedFields = await Utils.mapFields(fields);
 
-    // const query = await Utils.buildQuery(mappedFields);
+    const query = await Utils.buildQuery(mappedFields);
 
-    // const date = moment().unix();
+    const date = moment().unix();
 
-    // const filename = `${date}_${tableName}`;
+    const filename = `${date}_${tableName}`;
 
-    // const sqlQuery = await Utils.buildTableQuery(tableName, query);
+    const sqlQuery = await Utils.buildTableQuery(tableName, query);
 
     // writeFile(`${fileDirectory}/${filename}.sql`, sqlQuery)
     //   .then(() => {
