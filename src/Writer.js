@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
+const moment = require('moment');
 
 const { NODE_ENV } = process.env;
 
@@ -11,9 +12,10 @@ class Writer {
 
     this.exists = promisify(fs.exists);
     this.mkdir = promisify(fs.mkdir);
+    this.writeFile = promisify(fs.writeFile);
   }
 
-  // CHECK => RETURN BOOLEAN
+  // CHECK IF REGISTRY DIRECTORY EXISTS => RETURN BOOLEAN
   async checkIfRegistryDirectoryExits() {
     try {
       const exitsRegistryFolder = await this.exists(`${this.registryPath}/registry`);
@@ -26,7 +28,26 @@ class Writer {
     }
   }
 
-  async checkIfIndexFileExists() {}
+  // CHECK IF INDEX FILE EXISTS => RETURN BOOLEAN
+  async checkIfIndexFileExists(indexFilePath) {
+    const checkIndexFile = await this.exists(`${indexFilePath}/odal_index`);
+    if (!checkIndexFile) return { error: true, meta: 'Index file doesnt exists' };
+    return { error: false, meta: 'Index file exist' };
+  }
+
+  // CREATE INDEX FILE
+  async createIndexFile(indexFilePath) {
+    const checkIfIndexExists = await this.checkIfIndexFileExists(indexFilePath);
+
+    if (checkIfIndexExists.error) {
+      try {
+        const r = await this.writeFile(`${indexFilePath}/odal_index`, '', { flag: 'wx' });
+        return { error: false, meta: 'Odal file created' };
+      } catch (err) {
+        return { error: true, meta: err };
+      }
+    }
+  }
 
   // CREATE REGISTRY DIRECTORY
   async createRegistryFolder(registryPath) {

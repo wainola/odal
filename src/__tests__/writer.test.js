@@ -7,6 +7,7 @@ const { NODE_ENV } = process.env;
 
 const rmdir = promisify(fs.rmdir);
 const exists = promisify(fs.exists);
+const unlink = promisify(fs.unlink);
 
 const registryTestPath =
   NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
@@ -20,8 +21,14 @@ describe('Writer', () => {
 
   it('shoudl check if registry folder exists and if not, create it', async () => {
     const regisytryFolder = await exists(registryTestPath);
+    const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
 
-    if (regisytryFolder) {
+    if (regisytryFolder && !existsIndexFile.error) {
+      unlink(`${registryTestPath}/odal_index`).catch(err =>
+        console.log('Error removing the odal indexfile', err)
+      );
+      await rmdir(registryTestPath);
+    } else if (regisytryFolder && existsIndexFile.error) {
       await rmdir(registryTestPath);
     }
 
@@ -30,6 +37,23 @@ describe('Writer', () => {
     expect(createRegistryFolder.error).toBe(false);
 
     expect(createRegistryFolder.meta).toBeDefined();
+  });
+
+  it('should check if index file exists', async () => {
+    const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
+
+    expect(typeof existsIndexFile.error).toBe('boolean');
+  });
+
+  it('should create the indexfile provided that it doesnt exits', async () => {
+    const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
+
+    if (!existsIndexFile.error) return await unlink(`${registryTestPath}/odal_index`);
+
+    const createIndexFile = await Writer.createIndexFile(registryTestPath);
+
+    expect(typeof createIndexFile.error).toBe('boolean');
+    expect(createIndexFile.error).toBe(false);
   });
 
   it('should write a file provided table name and fields', async () => {});
