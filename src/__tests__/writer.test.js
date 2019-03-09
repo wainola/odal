@@ -14,6 +14,7 @@ const registryTestPath =
 describe('Writer', () => {
   it('should check if registry folder exists ann return a boolean', async () => {
     const existsRegistryDirectory = await Writer.checkIfRegistryDirectoryExits();
+
     expect(typeof existsRegistryDirectory.error).toBe('boolean');
   });
 
@@ -27,8 +28,11 @@ describe('Writer', () => {
     const createRegistryFolder = await Writer.createRegistryFolder(registryTestPath);
 
     expect(createRegistryFolder.error).toBe(false);
+
     expect(createRegistryFolder.meta).toBeDefined();
   });
 
-  it('work', () => {});
+  it('should write a file provided table name and fields', async () => {});
+
+  it('should write the index for the migrations files', async () => {});
 });

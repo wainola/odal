@@ -13,6 +13,7 @@ class Writer {
     this.mkdir = promisify(fs.mkdir);
   }
 
+  // CHECK => RETURN BOOLEAN
   async checkIfRegistryDirectoryExits() {
     try {
       const exitsRegistryFolder = await this.exists(`${this.registryPath}/registry`);
@@ -25,6 +26,9 @@ class Writer {
     }
   }
 
+  async checkIfIndexFileExists() {}
+
+  // CREATE REGISTRY DIRECTORY
   async createRegistryFolder(registryPath) {
     try {
       await this.mkdir(`${registryPath}`);
@@ -35,7 +39,11 @@ class Writer {
     }
   }
 
+  // WRITE FILE
   async writeFile(path, dataToWrite) {}
+
+  // WRITE INDEX FILE
+  async writeFileIndex(filename) {}
 }
 
 module.exports = new Writer();
