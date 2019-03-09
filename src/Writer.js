@@ -7,7 +7,7 @@ const { NODE_ENV } = process.env;
 class Writer {
   constructor() {
     this.registryPath =
-      NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__`;
+      NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
 
     this.exists = promisify(fs.exists);
     this.mkdir = promisify(fs.mkdir);
@@ -15,10 +15,7 @@ class Writer {
 
   async checkIfRegistryDirectoryExits() {
     try {
-      console.log('nodeEnv', NODE_ENV);
       const exitsRegistryFolder = await this.exists(`${this.registryPath}/registry`);
-
-      console.log('exits', exitsRegistryFolder);
 
       if (!exitsRegistryFolder) return this.createRegistryFolder(this.registryPath);
 
@@ -30,12 +27,11 @@ class Writer {
 
   async createRegistryFolder(registryPath) {
     try {
-      await this.mkdir(`${registryPath}/registry`);
+      await this.mkdir(`${registryPath}`);
 
       return { error: false, meta: 'registry folder successfully created' };
     } catch (err) {
-      console.log('Some error creating directory', err);
-      return { error: true, meta: err };
+      return { error: true, meta: 'registry folder already exists' };
     }
   }
 

@@ -17,7 +17,18 @@ describe('Writer', () => {
     expect(typeof existsRegistryDirectory.error).toBe('boolean');
   });
 
-  it('shoudl check if registry folder exists and if not, create it', async () => {});
+  it('shoudl check if registry folder exists and if not, create it', async () => {
+    const regisytryFolder = await exists(registryTestPath);
+
+    if (regisytryFolder) {
+      await rmdir(registryTestPath);
+    }
+
+    const createRegistryFolder = await Writer.createRegistryFolder(registryTestPath);
+
+    expect(createRegistryFolder.error).toBe(false);
+    expect(createRegistryFolder.meta).toBeDefined();
+  });
 
   it('work', () => {});
 });
