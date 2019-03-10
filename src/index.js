@@ -5,6 +5,7 @@ const { promisify } = require('util');
 const fs = require('fs');
 const Database = require('./services/database');
 const Utils = require('./utils');
+const Odal = require('./Odal');
 
 // FUNCTIONS TO USE AND PROMISIFY
 const readFile = promisify(fs.readFile);
@@ -18,25 +19,26 @@ const { NODE_ENV } = process.env;
 const odalIndexPath =
   NODE_ENV !== 'development'
     ? `${process.cwd()}/api/migrations/registry/odal_index`
-    : `${process.cwd()}/migrations/registry/odal_index`;
+    : `${process.cwd()}/src/registry/odal_index`;
 
 const fileDirectory =
   NODE_ENV !== 'development'
     ? `${process.cwd()}/api/migrations/registry`
-    : `${process.cwd()}/migrations/registry`;
+    : `${process.cwd()}/src/registry`;
 
 // CHECK IF DIRECTORIES EXISTS. IF NOT, CREATE THEM
 const registryPath =
   NODE_ENV !== 'development'
     ? `${process.cwd()}/api/migrations/registry`
-    : `${process.cwd()}/migrations/registry`;
+    : `${process.cwd()}/src/registry`;
 
 const odalIndexExists = fs.existsSync(odalIndexPath);
 
 // GET VERSION
-program.command('version').action(() => {
-  console.log('odal linux version 1.0.0');
-});
+program.command('version').action(Odal.version);
+
+// testing the passing of arguments
+program.command('getInfo <info>').action(Odal.getInfo);
 
 // GET STATUS OF MIGRATIONS
 program.command('status').action(() => {
@@ -52,58 +54,10 @@ program.command('test:connection').action(() => {
     .catch(error => console.log('Error on connecting to the database', error));
 });
 
+// program.command('create <tableName> [fields....]').action(Odal.create);
+
 // CREATE MIGRATIONS
-program.command('create <tableName> [fields...]').action(async (tableName, fields) => {
-  const mappedFields = await Utils.mapFields(fields);
-
-  const query = await Utils.buildQuery(mappedFields);
-
-  const date = moment().unix();
-
-  const filename = `${date}_${tableName}`;
-
-  const sqlQuery = await Utils.buildTableQuery(tableName, query);
-
-  writeFile(`${fileDirectory}/${filename}.sql`, sqlQuery)
-    .then(() => {
-      console.log(`Migration file for ${tableName} created!`);
-    })
-    .then(async () => {
-      const existsodalIndex = odalIndexExists;
-
-      // IF odal INDEX DOESNT EXITS WE CREATED AND WRITE TO THE INDEX
-      if (!existsodalIndex) {
-        try {
-          const odalIndexResult = await writeFile(odalIndexPath, filename, { flag: 'wx' });
-          return odalIndexResult;
-        } catch (error) {
-          console.log('error on writing the non existing odal file');
-          return error;
-        }
-      }
-
-      // IF odal INDEX ALREADY EXISTS, WE WRITE ON IT
-      try {
-        const fileR = await readFile(odalIndexPath, 'utf8')
-          .then(data => {
-            const newDataToWrite = `${data}\n${filename}`;
-            return newDataToWrite;
-          })
-          .then(async dataWroted => {
-            const writeToodal = await writeFile(odalIndexPath, dataWroted);
-            return writeToodal;
-          });
-
-        return fileR;
-      } catch (error) {
-        console.log('Error writing odal index', error);
-        return error;
-      }
-    })
-    .catch(error => {
-      console.error('Error on creating the migration file', error);
-    });
-});
+program.command('create <tableName> [fields...]').action(Odal.create);
 
 // RUN ALL MIGRATION
 program.command('migrate').action(() => {
