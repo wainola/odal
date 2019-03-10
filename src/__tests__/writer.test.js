@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
+const moment = require('moment');
 const Writer = require('../Writer');
 
 const { NODE_ENV } = process.env;
@@ -45,7 +46,7 @@ describe('Writer', () => {
     expect(typeof existsIndexFile.error).toBe('boolean');
   });
 
-  it.only('should create the indexfile provided that it doesnt exits', async () => {
+  it('should create the indexfile provided that it doesnt exits', async () => {
     const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
 
     if (!existsIndexFile.error) return await unlink(`${registryTestPath}/odal_index`);
@@ -56,17 +57,33 @@ describe('Writer', () => {
     expect(createIndexFile.error).toBe(false);
   });
 
-  it.only('should return error false if the odal index file exists', async () => {
+  it('should return error false if the odal index file exists', async () => {
     const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
 
     expect(typeof existsIndexFile.error).toBe('boolean');
     expect(existsIndexFile.error).toBe(false);
   });
 
-  it.only('should write on the index file provided that the file exists', async () => {
+  it('should write on the index file provided that the file exists', async () => {
     const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
 
     if (!existsIndexFile.error) return await unlink(`${registryTestPath}/odal_index`);
+
+    const createFile = await Writer.createIndexFile(registryTestPath);
+
+    if (!createFile.error) {
+      console.log('here');
+      const filename = 'users_table';
+      const dataToWrite = `${moment.unix()}_${filename}`;
+      const writeToFile = await Writer.writeIndexFile(
+        `${registryTestPath}/odal_index`,
+        dataToWrite
+      );
+
+      console.log(writeToFile);
+      expect(typeof writeToFile.error).toBe('boolean');
+      expect(writeToFile.error).toBe(false);
+    }
   });
 
   it('should write a file provided table name and fields', async () => {});

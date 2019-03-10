@@ -52,6 +52,17 @@ class Writer {
     return { error: false, meta: 'Index file already exists' };
   }
 
+  // WRITE ON THE INDE FILE
+  async writeIndexFile(filepath, dataToWrite) {
+    try {
+      const writeToFile = await this.writeFile(filepath, dataToWrite);
+      console.log('writeToFile', writeToFile);
+      return { error: false, meta: writeToFile };
+    } catch (err) {
+      return { error: true, meta: err };
+    }
+  }
+
   // CREATE REGISTRY DIRECTORY
   async createRegistryFolder(registryPath) {
     try {
