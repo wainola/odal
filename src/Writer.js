@@ -39,6 +39,7 @@ class Writer {
   async createIndexFile(indexFilePath) {
     const checkIfIndexExists = await this.checkIfIndexFileExists(indexFilePath);
 
+    console.log('fdssad', checkIfIndexExists);
     // IF THE INDEX FILE DOESNT EXISTS, CREATE IT
     if (checkIfIndexExists.error) {
       try {

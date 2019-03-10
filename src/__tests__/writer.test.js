@@ -72,7 +72,6 @@ describe('Writer', () => {
     const createFile = await Writer.createIndexFile(registryTestPath);
 
     if (!createFile.error) {
-      console.log('here');
       const filename = 'users_table';
       const dataToWrite = `${moment.unix()}_${filename}`;
       const writeToFile = await Writer.writeIndexFile(
@@ -80,7 +79,6 @@ describe('Writer', () => {
         dataToWrite
       );
 
-      console.log(writeToFile);
       expect(typeof writeToFile.error).toBe('boolean');
       expect(writeToFile.error).toBe(false);
     }
