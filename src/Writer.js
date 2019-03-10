@@ -117,7 +117,16 @@ class Writer {
         .then(async indexFileChecked => {
           console.log(indexFileChecked);
           if (indexFileChecked.error) {
+            try {
+              const createIndexFile = await this.createIndexFile(this.registryPath);
+              return createIndexFile;
+            } catch (err) {
+              return err;
+            }
           }
+        })
+        .then(async indexFilecreated => {
+          console.log(indexFilecreated);
         })
         .catch(err => console.log('Some error', err))
     );
