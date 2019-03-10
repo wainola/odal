@@ -45,7 +45,7 @@ describe('Writer', () => {
     expect(typeof existsIndexFile.error).toBe('boolean');
   });
 
-  it('should create the indexfile provided that it doesnt exits', async () => {
+  it.only('should create the indexfile provided that it doesnt exits', async () => {
     const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
 
     if (!existsIndexFile.error) return await unlink(`${registryTestPath}/odal_index`);
@@ -54,6 +54,19 @@ describe('Writer', () => {
 
     expect(typeof createIndexFile.error).toBe('boolean');
     expect(createIndexFile.error).toBe(false);
+  });
+
+  it.only('should return error false if the odal index file exists', async () => {
+    const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
+
+    expect(typeof existsIndexFile.error).toBe('boolean');
+    expect(existsIndexFile.error).toBe(false);
+  });
+
+  it.only('should write on the index file provided that the file exists', async () => {
+    const existsIndexFile = await Writer.checkIfIndexFileExists(registryTestPath);
+
+    if (!existsIndexFile.error) return await unlink(`${registryTestPath}/odal_index`);
   });
 
   it('should write a file provided table name and fields', async () => {});

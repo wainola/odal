@@ -39,6 +39,7 @@ class Writer {
   async createIndexFile(indexFilePath) {
     const checkIfIndexExists = await this.checkIfIndexFileExists(indexFilePath);
 
+    // IF THE INDEX FILE DOESNT EXISTS, CREATE IT
     if (checkIfIndexExists.error) {
       try {
         const r = await this.writeFile(`${indexFilePath}/odal_index`, '', { flag: 'wx' });
@@ -47,6 +48,8 @@ class Writer {
         return { error: true, meta: err };
       }
     }
+
+    return { error: false, meta: 'Index file already exists' };
   }
 
   // CREATE REGISTRY DIRECTORY
