@@ -1,3 +1,7 @@
+const moment = require('moment');
+const Writer = require('./Writer');
+const Utils = require('./utils');
+
 class Odal {
   static version() {
     console.log('Odal linux version 1.0.0');
@@ -18,6 +22,12 @@ class Odal {
     const filename = `${date}_${tableName}`;
 
     const sqlQuery = await Utils.buildTableQuery(tableName, query);
+
+    // console.log(mappedFields, query, date, filename, sqlQuery);
+
+    return Writer.writeMigrationFile(tableName, filename, sqlQuery)
+      .then(d => console.log('d', d))
+      .catch(e => console.log('e', e));
 
     // writeFile(`${fileDirectory}/${filename}.sql`, sqlQuery)
     //   .then(() => {

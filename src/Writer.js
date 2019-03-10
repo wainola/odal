@@ -39,7 +39,6 @@ class Writer {
   async createIndexFile(indexFilePath) {
     const checkIfIndexExists = await this.checkIfIndexFileExists(indexFilePath);
 
-    console.log('fdssad', checkIfIndexExists);
     // IF THE INDEX FILE DOESNT EXISTS, CREATE IT
     if (checkIfIndexExists.error) {
       try {
@@ -76,7 +75,53 @@ class Writer {
   }
 
   // WRITE FILE
-  async writeFile(path, dataToWrite) {}
+  async writeMigrationFile(tablename, filename, dataToWrite) {
+    // CHECK IF FOLDER REGISTRY EXISTS
+    return (
+      this.checkIfRegistryDirectoryExits()
+        .then(registryFolderResponse => {
+          return registryFolderResponse;
+        })
+        // IF FOLDER IS CREATED THEN WE CREATE THE MIGRATON FILE
+        .then(async data => {
+          console.log('data', data);
+          if (!data.error) {
+            try {
+              await this.writeFile(`${this.registryPath}/${filename}.sql`, dataToWrite);
+              return {
+                error: false,
+                meta: `Migration file for table ${tablename} wroted successfully!`
+              };
+            } catch (err) {
+              return {
+                error: true,
+                meta: `Problems on making the migration file for ${tablename}`,
+                filename
+              };
+            }
+          }
+        })
+        // NOW WE WROTE TO THE INDEX FILE
+        .then(async migrationFileWroted => {
+          console.log(migrationFileWroted);
+          if (!migrationFileWroted.error) {
+            try {
+              const checkIndexFile = await this.checkIfIndexFileExists(this.registryPath);
+              return checkIndexFile;
+            } catch (err) {
+              return err;
+            }
+          }
+        })
+        // IF THE INDEX FILE DOESNT EXISTS, WE CREATE IT
+        .then(async indexFileChecked => {
+          console.log(indexFileChecked);
+          if (indexFileChecked.error) {
+          }
+        })
+        .catch(err => console.log('Some error', err))
+    );
+  }
 
   // WRITE INDEX FILE
   async writeFileIndex(filename) {}
