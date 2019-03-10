@@ -26,6 +26,10 @@ class Odal {
       .then(migration => console.log(migration.meta))
       .catch(err => console.log('Error on creating the migration file', err.meta));
   }
+
+  static async migrate() {
+    console.log('Migrate!!!');
+  }
 }
 
 module.exports = Odal;
