@@ -1,7 +1,6 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
-const moment = require('moment');
 
 const { NODE_ENV } = process.env;
 
@@ -98,6 +97,23 @@ class Writer {
               };
             }
           }
+
+          // IF THE FOLDER ALREADY EXISTS, CREATE THE MIGRATION FILE AND
+          // WE WRITE ON THE INDEX FILE
+          try {
+            await this.writeFile(`${this.registryPath}/${filename}.sql`, dataToWrite);
+            // TODO => USE SOME KIND OF DICT TO ABSTRACT THIS TEDIOUS ERROR HANDLING
+            return {
+              error: false,
+              meta: `Migration file for table ${tablename} wroted successfully!`
+            };
+          } catch (err) {
+            return {
+              error: true,
+              meta: `Problems on making the migration file for ${tablename}`,
+              filename
+            };
+          }
         })
         // NOW WE WROTE TO THE INDEX FILE
         .then(async migrationFileWroted => {
@@ -120,6 +136,9 @@ class Writer {
               return err;
             }
           }
+
+          // IF THE INDEX FILE EXISTS, return
+          return indexFileChecked;
         })
         .then(async indexFilecreated => {
           if (!indexFilecreated.error) {

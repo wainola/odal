@@ -12,7 +12,6 @@ class Odal {
   }
 
   static async create(tableName, fields) {
-    console.log('CREATE!', tableName, fields);
     const mappedFields = await Utils.mapFields(fields);
 
     const query = await Utils.buildQuery(mappedFields);
@@ -26,48 +25,8 @@ class Odal {
     // console.log(mappedFields, query, date, filename, sqlQuery);
 
     return Writer.writeMigrationFile(tableName, filename, sqlQuery)
-      .then(d => console.log('d', d))
-      .catch(e => console.log('e', e));
-
-    // writeFile(`${fileDirectory}/${filename}.sql`, sqlQuery)
-    //   .then(() => {
-    //     console.log(`Migration file for ${tableName} created!`);
-    //   })
-    //   .then(async () => {
-    //     const existsodalIndex = odalIndexExists;
-
-    //     // IF odal INDEX DOESNT EXITS WE CREATED AND WRITE TO THE INDEX
-    //     if (!existsodalIndex) {
-    //       try {
-    //         const odalIndexResult = await writeFile(odalIndexPath, filename, { flag: 'wx' });
-    //         return odalIndexResult;
-    //       } catch (error) {
-    //         console.log('error on writing the non existing odal file');
-    //         return error;
-    //       }
-    //     }
-
-    //     // IF odal INDEX ALREADY EXISTS, WE WRITE ON IT
-    //     try {
-    //       const fileR = await readFile(odalIndexPath, 'utf8')
-    //         .then(data => {
-    //           const newDataToWrite = `${data}\n${filename}`;
-    //           return newDataToWrite;
-    //         })
-    //         .then(async dataWroted => {
-    //           const writeToodal = await writeFile(odalIndexPath, dataWroted);
-    //           return writeToodal;
-    //         });
-
-    //       return fileR;
-    //     } catch (error) {
-    //       console.log('Error writing odal index', error);
-    //       return error;
-    //     }
-    //   })
-    //   .catch(error => {
-    //     console.error('Error on creating the migration file', error);
-    //   });
+      .then(migration => console.log(migration.meta))
+      .catch(err => console.log('Error on creating the migration file', err.meta));
   }
 }
 
