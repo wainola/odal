@@ -22,8 +22,6 @@ class Odal {
 
     const sqlQuery = await Utils.buildTableQuery(tableName, query);
 
-    // console.log(mappedFields, query, date, filename, sqlQuery);
-
     return Writer.writeMigrationFile(tableName, filename, sqlQuery)
       .then(migration => console.log(migration.meta))
       .catch(err => console.log('Error on creating the migration file', err.meta));
