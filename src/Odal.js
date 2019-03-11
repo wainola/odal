@@ -1,5 +1,6 @@
 const moment = require('moment');
 const Writer = require('./Writer');
+const Reader = require('./Reader');
 const Utils = require('./utils');
 
 class Odal {
@@ -25,6 +26,10 @@ class Odal {
     return Writer.writeMigrationFile(tableName, filename, sqlQuery)
       .then(migration => console.log(migration.meta))
       .catch(err => console.log('Error on creating the migration file', err.meta));
+  }
+
+  static async migrate() {
+    return Reader.migrate();
   }
 }
 

@@ -49,7 +49,7 @@ class Database {
       const q = await this.conn.query(query);
       const r = await q.rows;
       if (r.length === 0) {
-        return { sucess: true };
+        return { success: true };
       }
       return r;
     } catch (e) {

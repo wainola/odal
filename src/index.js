@@ -60,63 +60,7 @@ program.command('test:connection').action(() => {
 program.command('create <tableName> [fields...]').action(Odal.create);
 
 // RUN ALL MIGRATION
-program.command('migrate').action(() => {
-  const existsodalIndex = odalIndexExists;
-
-  if (!existsodalIndex) {
-    console.log('No migrations to run');
-
-    process.exit(1);
-  }
-
-  // READ THE MIGRATIONS FILE => READING THE INDEX, APPENDING THE .JS AND CALLING THE READFILE
-  readFile(`${fileDirectory}/odal_index`, 'utf8')
-    .then(dataRead => {
-      console.log(dataRead.split('\n'));
-      const filenames = dataRead.split('\n');
-
-      // USING REDUCE TO ADD SERIAL EXECUTION TO THE PROMISES
-      const results = filenames.reduce(async (resolved, filename) => {
-        try {
-          const migrationFile =
-            NODE_ENV !== 'development'
-              ? `${process.cwd()}/api/migrations/registry/${filename}.sql`
-              : `${process.cwd()}/migrations/registry/${filename}.sql`;
-
-          const fileRead = await readFile(migrationFile, 'utf8');
-          const stringProccesed = fileRead.replace(/\n/, '');
-
-          return resolved.then(dataResolved => [...dataResolved, stringProccesed]);
-        } catch (error) {
-          return [{ error: true, meta: error }];
-        }
-      }, Promise.resolve([]));
-
-      return results;
-    })
-    .then(async resultsFromReading => {
-      // HERE WE SEND THE MIGRATIONS TO THE DATABASE
-      const makeConnection = await Database.connect();
-
-      // WE RUN THE MIGRATIONS
-      //   IF WE USE FOR EACH WE CANNOT RETURN TO USE A THEN
-      if (!makeConnection.error) {
-        resultsFromReading.forEach(async query => {
-          try {
-            const queryResult = await Database.queryToExec(query);
-            console.log('query executed', queryResult);
-            return queryResult;
-          } catch (e) {
-            console.log('Error on executing the query', e);
-          }
-        });
-      }
-    })
-    .catch(err => {
-      console.log('Error on reading the odal index', err);
-      process.exit(1);
-    });
-});
+program.command('migrate').action(Odal.migrate);
 
 // RUN THE LATEST MIGRATION
 program.command('migrate:last').action(() => {
