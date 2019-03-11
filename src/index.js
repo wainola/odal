@@ -46,16 +46,6 @@ program.command('status').action(() => {
   console.log('process.env', process.env);
 });
 
-program.command('test:connection').action(() => {
-  Database.connect();
-  Database.testConnection()
-    .then(data => console.log('Successfull connection to the database', data))
-    .then(() => process.exit(1))
-    .catch(error => console.log('Error on connecting to the database', error));
-});
-
-// program.command('create <tableName> [fields....]').action(Odal.create);
-
 // CREATE MIGRATIONS
 program.command('create <tableName> [fields...]').action(Odal.create);
 
