@@ -12,6 +12,7 @@ class Writer {
     this.exists = promisify(fs.exists);
     this.mkdir = promisify(fs.mkdir);
     this.writeFile = promisify(fs.writeFile);
+    this.readFile = promisify(fs.readFile);
   }
 
   // CHECK IF REGISTRY DIRECTORY EXISTS => RETURN BOOLEAN
@@ -54,7 +55,11 @@ class Writer {
   // WRITE ON THE INDE FILE
   async writeIndexFile(filepath, dataToWrite) {
     try {
-      await this.writeFile(filepath, dataToWrite);
+      const dataWroted = await this.readFile(filepath, 'utf8');
+      const dToW = `${dataWroted}\n${dataToWrite}`;
+
+      await this.writeFile(filepath, dToW);
+
       return { error: false, meta: `${dataToWrite}.sql wroted successfully` };
     } catch (err) {
       return { error: true, meta: err };
