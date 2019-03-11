@@ -1,6 +1,6 @@
 {
   "name": "odal",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "migraton tool that resembles goose",
   "main": "./src/index.js",
   "scripts": {
