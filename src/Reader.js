@@ -52,9 +52,7 @@ class Reader {
     return migrations.reduce(async (accumulator, { migration, filename }) => {
       try {
         const query = await this.database.queryToExec(migration);
-        console.log('q:', query);
         if (query.success) {
-          console.log('query', query);
           return accumulator.then(arr => [...arr, { error: query.success, meta: filename }]);
         }
       } catch (err) {
@@ -80,7 +78,12 @@ class Reader {
       .then(filenames => filenames.filter(e => e !== ''))
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
       .then(migrationProcessed => this.runMigrations(migrationProcessed))
-      .then(resultOfMigration => console.log('result of migrations', resultOfMigration))
+      .then(resultOfMigration =>
+        resultOfMigration.forEach(dataMigrated =>
+          console.log(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
+        )
+      )
+      .then(() => process.exit())
       .catch(err => console.log(err));
   }
 }
