@@ -28,12 +28,34 @@ class Reader {
     return { error: false, meta: readedFile };
   }
 
+  async processMigrationFiles(filenames) {
+    return filenames.reduce(async (resolved, filename) => {
+      try {
+        const migrationFile = `${this.registryPath}/${filename}.sql`;
+        const fileRead = await this.readFile(migrationFile, 'utf8');
+        const fileProcessed = fileRead.replace(/\n/, '');
+
+        return resolved.then(arrayResolved => [...arrayResolved, fileProcessed]);
+      } catch (err) {
+        return [{ error: true, meta: err }];
+      }
+    }, Promise.resolve([]));
+  }
+
   async migrate() {
     const checkOdalIndexFile = await this.checkIndexFileExists(this.registryPath);
 
     if (checkOdalIndexFile.error) {
       return { error: true, meta: 'No migrations to run' };
     }
+
+    const readIndexFile = await this.readOdalIndexFile(this.registryPath);
+
+    const filenames = readIndexFile.split('\n');
+
+    const results = await this.processMigrationFiles(filenames);
+
+    console.log(results);
   }
 }
 
