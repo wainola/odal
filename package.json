@@ -26,5 +26,7 @@
     "prettier": "^1.16.4"
   },
   "preferGlobal": true,
-  "bin": "./src/index.js"
+  "bin": {
+    "odal": "./src/index.js"
+  }
 }
