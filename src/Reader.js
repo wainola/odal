@@ -1,16 +1,18 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
+const Database = require('./services/database');
 
 const { NODE_ENV } = process.env;
 
 class Reader {
-  constructor() {
+  constructor(database) {
     this.registryPath =
       NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
 
     this.readFile = promisify(fs.readFile);
     this.exists = promisify(fs.exists);
+    this.database = database;
   }
 
   async checkIndexFileExists(registryPath) {
@@ -35,9 +37,28 @@ class Reader {
         const fileRead = await this.readFile(migrationFile, 'utf8');
         const fileProcessed = fileRead.replace(/\n/, '');
 
-        return resolved.then(arrayResolved => [...arrayResolved, fileProcessed]);
+        return resolved.then(arrayResolved => [
+          ...arrayResolved,
+          { migration: fileProcessed, filename }
+        ]);
       } catch (err) {
         return [{ error: true, meta: err }];
+      }
+    }, Promise.resolve([]));
+  }
+
+  async runMigrations(migrations) {
+    this.database.connect();
+    return migrations.reduce(async (accumulator, { migration, filename }) => {
+      try {
+        const query = await this.database.queryToExec(migration);
+        console.log('q:', query);
+        if (query.success) {
+          console.log('query', query);
+          return accumulator.then(arr => [...arr, { error: query.success, meta: filename }]);
+        }
+      } catch (err) {
+        return { error: true, meta: err };
       }
     }, Promise.resolve([]));
   }
@@ -49,14 +70,19 @@ class Reader {
       return { error: true, meta: 'No migrations to run' };
     }
 
-    const readIndexFile = await this.readOdalIndexFile(this.registryPath);
-
-    const filenames = readIndexFile.split('\n');
-
-    const results = await this.processMigrationFiles(filenames);
-
-    console.log(results);
+    return this.readOdalIndexFile(this.registryPath)
+      .then(indexFileContent => indexFileContent.meta)
+      .then(dataWroted => {
+        console.log(dataWroted.split('\n').shift());
+        const filenames = dataWroted.split('\n');
+        return filenames;
+      })
+      .then(filenames => filenames.filter(e => e !== ''))
+      .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
+      .then(migrationProcessed => this.runMigrations(migrationProcessed))
+      .then(resultOfMigration => console.log('result of migrations', resultOfMigration))
+      .catch(err => console.log(err));
   }
 }
 
-module.exports = new Reader();
+module.exports = new Reader(Database);

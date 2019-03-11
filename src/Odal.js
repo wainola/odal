@@ -1,5 +1,6 @@
 const moment = require('moment');
 const Writer = require('./Writer');
+const Reader = require('./Reader');
 const Utils = require('./utils');
 
 class Odal {
@@ -28,7 +29,7 @@ class Odal {
   }
 
   static async migrate() {
-    console.log('Migrate!!!');
+    return Reader.migrate();
   }
 }
 
