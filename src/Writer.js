@@ -77,6 +77,38 @@ class Writer {
     }
   }
 
+  async writeData(dataToWrite, filename, tablename) {
+    try {
+      this.writeFile(`${this.registryPath}/${filename}.sql`, dataToWrite);
+
+      return {
+        error: false,
+        meta: `Migration file for table ${tablename} wroted successfully!`
+      };
+    } catch (err) {
+      return {
+        error: true,
+        meta: `Problems on making the migration file for ${tablename}`
+      };
+    }
+  }
+
+  async writeClean(data = '', filename, migrationName) {
+    return this.writeData(data, filename, migrationName)
+      .then(dataWroted => {
+        if (!dataWroted.error) {
+          return this.checkIfIndexFileExists(this.registryPath);
+        }
+        return dataWroted.meta;
+      })
+      .then(checkedIndexFile => {
+        if (!checkedIndexFile.error) {
+          return this.writeIndexFile(`${this.registryPath}/odal_index`, filename);
+        }
+      })
+      .catch(err => err);
+  }
+
   // WRITE FILE
   async writeMigrationFile(tablename, filename, dataToWrite) {
     // CHECK IF FOLDER REGISTRY EXISTS
@@ -88,37 +120,12 @@ class Writer {
         // IF FOLDER IS CREATED THEN WE CREATE THE MIGRATON FILE
         .then(async data => {
           if (!data.error) {
-            try {
-              await this.writeFile(`${this.registryPath}/${filename}.sql`, dataToWrite);
-              return {
-                error: false,
-                meta: `Migration file for table ${tablename} wroted successfully!`
-              };
-            } catch (err) {
-              return {
-                error: true,
-                meta: `Problems on making the migration file for ${tablename}`,
-                filename
-              };
-            }
+            return this.writeData(dataToWrite, filename, tablename);
           }
 
           // IF THE FOLDER ALREADY EXISTS, CREATE THE MIGRATION FILE AND
           // WE WRITE ON THE INDEX FILE
-          try {
-            await this.writeFile(`${this.registryPath}/${filename}.sql`, dataToWrite);
-            // TODO => USE SOME KIND OF DICT TO ABSTRACT THIS TEDIOUS ERROR HANDLING
-            return {
-              error: false,
-              meta: `Migration file for table ${tablename} wroted successfully!`
-            };
-          } catch (err) {
-            return {
-              error: true,
-              meta: `Problems on making the migration file for ${tablename}`,
-              filename
-            };
-          }
+          return this.writeData(dataToWrite, filename, tablename);
         })
         // NOW WE WROTE TO THE INDEX FILE
         .then(async migrationFileWroted => {
@@ -159,9 +166,6 @@ class Writer {
         .catch(err => console.log('Some error', err))
     );
   }
-
-  // WRITE INDEX FILE
-  async writeFileIndex(filename) {}
 }
 
 module.exports = new Writer();

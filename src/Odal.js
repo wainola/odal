@@ -31,6 +31,17 @@ class Odal {
   static async migrate() {
     return Reader.migrate();
   }
+
+  static async createClean(migrationName) {
+    const date = moment().unix();
+
+    const filename = `${date}_${migrationName}`;
+
+    return Writer.writeClean('', filename, migrationName)
+      .then(data => console.log(data.meta))
+      .then(() => process.exit(1))
+      .catch(err => console.log(err.meta));
+  }
 }
 
 module.exports = Odal;

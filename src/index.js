@@ -49,6 +49,9 @@ program.command('status').action(() => {
 // CREATE MIGRATIONS
 program.command('create <tableName> [fields...]').action(Odal.create);
 
+// CREATE CLEAN MIGRATION
+program.command('create:clean <migrationName>').action(Odal.createClean);
+
 // RUN ALL MIGRATION
 program.command('migrate').action(Odal.migrate);
 
