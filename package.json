@@ -27,6 +27,6 @@
   },
   "preferGlobal": true,
   "bin": {
-    "odal": "./node_modules/.bin/odal"
+    "odal": "./src/index.js"
   }
 }
