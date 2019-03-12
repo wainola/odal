@@ -61,6 +61,41 @@ class Reader {
     }, Promise.resolve([]));
   }
 
+  async getLastMigration(migrationData) {
+    return migrationData.pop();
+  }
+
+  async checkIfFileEmpty(lastMigration) {
+    return this.readMigrationFile(lastMigration.filename)
+      .then(dataReaded => {
+        if (dataReaded !== '') {
+          return this.runSingleMigration(dataReaded);
+        }
+        return dataReaded;
+      })
+      .catch(err => err);
+  }
+
+  async readMigrationFile(filename) {
+    try {
+      const readFile = this.readFile(`${this.registryPath}/${filename}.sql`, 'utf8');
+      return { data: readFile, meta: filename };
+    } catch (err) {
+      return { error: true, meta: err.meta };
+    }
+  }
+
+  async runSingleMigration({ data, meta }) {
+    const dataToSend = await data;
+    this.database.connect();
+    try {
+      const query = await this.database.queryToExec(dataToSend);
+      return { success: query.success, meta };
+    } catch (err) {
+      return { error: err.error, meta: err.meta };
+    }
+  }
+
   async migrate() {
     const checkOdalIndexFile = await this.checkIndexFileExists(this.registryPath);
 
@@ -85,6 +120,32 @@ class Reader {
       )
       .then(() => process.exit())
       .catch(err => console.log(err));
+  }
+
+  async migrateLast() {
+    return this.checkIndexFileExists(this.registryPath)
+      .then(async indexFileChecked => {
+        if (!indexFileChecked.error) {
+          try {
+            return this.readOdalIndexFile(this.registryPath);
+          } catch (err) {
+            return { error: true, meta: 'No migrations to run' };
+          }
+        }
+      })
+      .then(odalIndexFileContent => odalIndexFileContent.meta)
+      .then(dataWroted => dataWroted.split('\n'))
+      .then(filenames => filenames.filter(e => e !== ''))
+      .then(filenamesProccessed => this.processMigrationFiles(filenamesProccessed))
+      .then(migrationData => this.getLastMigration(migrationData))
+      .then(lastMigration => this.checkIfFileEmpty(lastMigration))
+      .then(fileReaded => {
+        // I THINK THAT THIS IF IS USELESS
+        if (fileReaded.success) {
+          return `Success on running the migration file for ${fileReaded.meta}`;
+        }
+      })
+      .catch(err => err);
   }
 }
 

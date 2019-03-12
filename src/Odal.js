@@ -42,6 +42,13 @@ class Odal {
       .then(() => process.exit(1))
       .catch(err => console.log(err.meta));
   }
+
+  static async migrateLast() {
+    return Reader.migrateLast()
+      .then(message => console.log(message))
+      .then(() => process.exit(1))
+      .catch(err => console.log(err));
+  }
 }
 
 module.exports = Odal;
