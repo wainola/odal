@@ -61,6 +61,16 @@ class Reader {
     }, Promise.resolve([]));
   }
 
+  async getLastMigration(migrationData) {
+    return migrationData.pop();
+  }
+
+  async checkIfFileEmpty(lastMigration) {
+    // READ THE FILE
+    // CHECK IF EMPTY
+    // RETURN BOOLEAN
+  }
+
   async migrate() {
     const checkOdalIndexFile = await this.checkIndexFileExists(this.registryPath);
 
@@ -85,6 +95,26 @@ class Reader {
       )
       .then(() => process.exit())
       .catch(err => console.log(err));
+  }
+
+  async migrateLast() {
+    return this.checkIndexFileExists(this.registryPath)
+      .then(async indexFileChecked => {
+        if (!indexFileChecked.error) {
+          try {
+            return this.readOdalIndexFile(this.registryPath);
+          } catch (err) {
+            return { error: true, meta: 'No migrations to run' };
+          }
+        }
+      })
+      .then(odalIndexFileContent => odalIndexFileContent.meta)
+      .then(dataWroted => dataWroted.split('\n'))
+      .then(filenames => filenames.filter(e => e !== ''))
+      .then(filenamesProccessed => this.processMigrationFiles(filenamesProccessed))
+      .then(migrationData => this.getLastMigration(migrationData))
+      .then(lastMigration => this.checkIfFileEmpty(lastMigration))
+      .catch(err => err);
   }
 }
 

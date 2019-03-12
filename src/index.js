@@ -56,46 +56,47 @@ program.command('create:clean <migrationName>').action(Odal.createClean);
 program.command('migrate').action(Odal.migrate);
 
 // RUN THE LATEST MIGRATION
-program.command('migrate:last').action(() => {
-  Database.connect();
-  if (!odalIndexExists) {
-    console.log('No migrations to run');
+program.command('migrate:last').action(Odal.migrateLast);
+// program.command('migrate:last').action(() => {
+//   Database.connect();
+//   if (!odalIndexExists) {
+//     console.log('No migrations to run');
 
-    process.exit(1);
-  }
+//     process.exit(1);
+//   }
 
-  readFile(`${odalIndexPath}`, 'utf8')
-    .then(async dataFile => {
-      const filenames = dataFile.split('\n');
-      const lastMigration = filenames.pop();
-      const filename = `${registryPath}/${lastMigration}.sql`;
+//   readFile(`${odalIndexPath}`, 'utf8')
+//     .then(async dataFile => {
+//       const filenames = dataFile.split('\n');
+//       const lastMigration = filenames.pop();
+//       const filename = `${registryPath}/${lastMigration}.sql`;
 
-      try {
-        const fileContent = await readFile(filename, 'utf8');
-        return fileContent;
-      } catch (e) {
-        console.log('Error reading the last migration file', e);
-        return e;
-      }
-    })
-    .then(async fileContent => {
-      console.log('fileContent', fileContent);
-      const queryToExec = fileContent;
+//       try {
+//         const fileContent = await readFile(filename, 'utf8');
+//         return fileContent;
+//       } catch (e) {
+//         console.log('Error reading the last migration file', e);
+//         return e;
+//       }
+//     })
+//     .then(async fileContent => {
+//       console.log('fileContent', fileContent);
+//       const queryToExec = fileContent;
 
-      try {
-        const results = await Database.queryToExec(queryToExec);
-        return results;
-      } catch (e) {
-        console.log('Some error happened during query execution', e);
-        return e;
-      }
-    })
-    .then(resultsOfInsertion => {
-      console.log('RESULT OF INSERTION', resultsOfInsertion);
-      Database.closeConnection();
-      process.exit(1);
-    });
-});
+//       try {
+//         const results = await Database.queryToExec(queryToExec);
+//         return results;
+//       } catch (e) {
+//         console.log('Some error happened during query execution', e);
+//         return e;
+//       }
+//     })
+//     .then(resultsOfInsertion => {
+//       console.log('RESULT OF INSERTION', resultsOfInsertion);
+//       Database.closeConnection();
+//       process.exit(1);
+//     });
+// });
 
 // REMOVE LAST MIGRATION
 program.command('remove:last').action(() => {
