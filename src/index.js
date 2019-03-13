@@ -58,6 +58,12 @@ program.command('migrate').action(Odal.migrate);
 // RUN THE LATEST MIGRATION
 program.command('migrate:last').action(Odal.migrateLast);
 
+// REMOVE ALL MIGRATIONS
+program.command('remove:all').action(Odal.remove);
+
+// REMOVE LAST MIGRATION
+program.command('remove:last').action(Odal.removeLast);
+
 // REMOVE LAST MIGRATION
 program.command('remove:last').action(() => {
   if (!odalIndexExists) {
