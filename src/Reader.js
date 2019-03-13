@@ -96,6 +96,53 @@ class Reader {
     }
   }
 
+  async getLastMigrationFileName(odalIndexData) {
+    return odalIndexData.split('\n').pop();
+  }
+
+  async checkIfSentenceIsTableCreation(migrationFile) {
+    return migrationFile.includes('TABLE');
+  }
+
+  async getTableName(migrationFile) {
+    console.log('m:', migrationFile.split(' '));
+    const splited = migrationFile.split(' ');
+    const i = splited.indexOf('TABLE');
+    return splited[i + 1];
+  }
+
+  async rollBackSingleMigration(migrationFileName) {
+    const migrationFileRead = await this.readFile(
+      `${this.registryPath}/${migrationFileName}.sql`,
+      'utf8'
+    );
+
+    // DONT LIKE THIS => WE SHOULD USE MARKERS AS A COMMENTS
+    // INSIDE THE FILES
+    const checkIfSentenceIsTableCreation = await this.checkIfSentenceIsTableCreation(
+      migrationFileRead
+    );
+
+    if (checkIfSentenceIsTableCreation) {
+      const tablename = await this.getTableName(migrationFileRead);
+
+      return this.runRollBack(tablename);
+    }
+
+    return migrationFileRead;
+  }
+
+  async runRollBack(tablename) {
+    this.database.connect();
+    try {
+      const q = `DROP TABLE ${tablename}`;
+      const qToExec = await this.database.queryToExec(tq);
+      return qToExec;
+    } catch (err) {
+      return err;
+    }
+  }
+
   async migrate() {
     const checkOdalIndexFile = await this.checkIndexFileExists(this.registryPath);
 
@@ -146,6 +193,22 @@ class Reader {
         }
       })
       .catch(err => err);
+  }
+
+  async removeLast() {
+    return this.checkIndexFileExists(this.registryPath)
+      .then(async indexFileExists => {
+        try {
+          if (!indexFileExists.error) {
+            return this.readOdalIndexFile(this.registryPath);
+          }
+        } catch (err) {
+          return err;
+        }
+      })
+      .then(odalIndexFileContent => odalIndexFileContent.meta)
+      .then(meta => this.getLastMigrationFileName(meta))
+      .then(lastMigrationFilename => this.rollBackSingleMigration(lastMigrationFilename));
   }
 }
 

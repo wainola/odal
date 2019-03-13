@@ -65,57 +65,57 @@ program.command('remove:all').action(Odal.remove);
 program.command('remove:last').action(Odal.removeLast);
 
 // REMOVE LAST MIGRATION
-program.command('remove:last').action(() => {
-  if (!odalIndexExists) {
-    console.log('No migrations to run');
+// program.command('remove:last').action(() => {
+//   if (!odalIndexExists) {
+//     console.log('No migrations to run');
 
-    process.exit(1);
-  }
+//     process.exit(1);
+//   }
 
-  readFile(`${odalIndexPath}`, 'utf8')
-    .then(async datafile => {
-      const lastMigration = datafile.split('\n').pop();
+//   readFile(`${odalIndexPath}`, 'utf8')
+//     .then(async datafile => {
+//       const lastMigration = datafile.split('\n').pop();
 
-      const newodalIndexContent = datafile
-        .split('\n')
-        .filter(item => item !== lastMigration)
-        .join('\n');
-      console.log('lastMigration', lastMigration);
-      console.log('new odal index content', newodalIndexContent);
+//       const newodalIndexContent = datafile
+//         .split('\n')
+//         .filter(item => item !== lastMigration)
+//         .join('\n');
+//       console.log('lastMigration', lastMigration);
+//       console.log('new odal index content', newodalIndexContent);
 
-      try {
-        const writeToIndex = await writeFile(`${odalIndexPath}`, newodalIndexContent);
-        console.log('odal index updated!');
-      } catch (err) {
-        console.log('Some error on updating the odal file', err);
-      }
-      return lastMigration;
-    })
-    .then(async lastMigration => {
-      const parseTableName = lastMigration.split('_').pop();
+//       try {
+//         const writeToIndex = await writeFile(`${odalIndexPath}`, newodalIndexContent);
+//         console.log('odal index updated!');
+//       } catch (err) {
+//         console.log('Some error on updating the odal file', err);
+//       }
+//       return lastMigration;
+//     })
+//     .then(async lastMigration => {
+//       const parseTableName = lastMigration.split('_').pop();
 
-      try {
-        Database.connect();
+//       try {
+//         Database.connect();
 
-        const query = `DROP TABLE ${parseTableName}`;
+//         const query = `DROP TABLE ${parseTableName}`;
 
-        const result = await Database.queryToExec(query);
+//         const result = await Database.queryToExec(query);
 
-        return [result, parseTableName];
-      } catch (err) {
-        console.log(`Some error on droping the table ${parseTableName}`, err);
+//         return [result, parseTableName];
+//       } catch (err) {
+//         console.log(`Some error on droping the table ${parseTableName}`, err);
 
-        return err;
-      }
-    })
-    .then(async ([result, parseTableName]) => {
-      console.log('Success on droping the table', parseTableName);
-      process.exit(1);
-    })
-    .catch(err => {
-      console.log('Error when removing the last migration', err);
-    });
-});
+//         return err;
+//       }
+//     })
+//     .then(async ([result, parseTableName]) => {
+//       console.log('Success on droping the table', parseTableName);
+//       process.exit(1);
+//     })
+//     .catch(err => {
+//       console.log('Error when removing the last migration', err);
+//     });
+// });
 
 // REMOVE ALL THE MIGRATIONS FILE AND THE INDEX
 program.command('remove:all').action(async () => {
