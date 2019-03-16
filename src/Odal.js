@@ -49,6 +49,16 @@ class Odal {
       .then(() => process.exit(1))
       .catch(err => console.log(err));
   }
+
+  static async remove() {}
+
+  static async removeLast() {}
+
+  static async getInfo() {}
+
+  static async version() {}
+
+  static async help() {}
 }
 
 module.exports = Odal;
