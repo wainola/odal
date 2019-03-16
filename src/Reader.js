@@ -49,7 +49,6 @@ class Reader {
   }
 
   async runMigrations(migrations) {
-    console.log('MMMM:::', migrations);
     return Migrate.runMigrations(this.database, migrations);
   }
 
@@ -59,10 +58,13 @@ class Reader {
 
   async checkIfFileEmpty(lastMigration) {
     return this.readMigrationFile(lastMigration.filename)
-      .then(dataReaded => {
-        if (dataReaded !== '') {
+      .then(async dataReaded => {
+        const content = await dataReaded.data;
+
+        if (content !== '') {
           return this.runSingleMigration(dataReaded);
         }
+
         return dataReaded;
       })
       .catch(err => err);
@@ -78,7 +80,7 @@ class Reader {
   }
 
   async runSingleMigration({ data, meta }) {
-    return Migrate.runSingleMigration({ data, meta });
+    return Migrate.runSingleMigration({ database: this.database, data, meta });
   }
 
   async migrate() {
@@ -91,16 +93,11 @@ class Reader {
     return this.readOdalIndexFile(this.registryPath)
       .then(indexFileContent => indexFileContent.meta)
       .then(dataWroted => {
-        console.log(dataWroted.split('\n').shift());
         const filenames = dataWroted.split('\n');
         return filenames;
       })
       .then(filenames => filenames.filter(e => e !== ''))
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
-      .then(p => {
-        console.log('p:::', p);
-        return p;
-      })
       .then(migrationProcessed => this.runMigrations(migrationProcessed))
       .then(resultOfMigration =>
         resultOfMigration.forEach(dataMigrated =>
