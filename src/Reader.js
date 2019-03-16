@@ -2,6 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
 const Database = require('./services/database');
+const Migrate = require('./Migrate');
 
 const { NODE_ENV } = process.env;
 
@@ -48,17 +49,7 @@ class Reader {
   }
 
   async runMigrations(migrations) {
-    this.database.connect();
-    return migrations.reduce(async (accumulator, { migration, filename }) => {
-      try {
-        const query = await this.database.queryToExec(migration);
-        if (query.success) {
-          return accumulator.then(arr => [...arr, { error: query.success, meta: filename }]);
-        }
-      } catch (err) {
-        return { error: true, meta: err };
-      }
-    }, Promise.resolve([]));
+    return Migrate.runMigrations(this.database, migrations);
   }
 
   async getLastMigration(migrationData) {
@@ -67,10 +58,13 @@ class Reader {
 
   async checkIfFileEmpty(lastMigration) {
     return this.readMigrationFile(lastMigration.filename)
-      .then(dataReaded => {
-        if (dataReaded !== '') {
+      .then(async dataReaded => {
+        const content = await dataReaded.data;
+
+        if (content !== '') {
           return this.runSingleMigration(dataReaded);
         }
+
         return dataReaded;
       })
       .catch(err => err);
@@ -86,14 +80,7 @@ class Reader {
   }
 
   async runSingleMigration({ data, meta }) {
-    const dataToSend = await data;
-    this.database.connect();
-    try {
-      const query = await this.database.queryToExec(dataToSend);
-      return { success: query.success, meta };
-    } catch (err) {
-      return { error: err.error, meta: err.meta };
-    }
+    return Migrate.runSingleMigration({ database: this.database, data, meta });
   }
 
   async migrate() {
@@ -106,7 +93,6 @@ class Reader {
     return this.readOdalIndexFile(this.registryPath)
       .then(indexFileContent => indexFileContent.meta)
       .then(dataWroted => {
-        console.log(dataWroted.split('\n').shift());
         const filenames = dataWroted.split('\n');
         return filenames;
       })
