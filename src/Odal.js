@@ -37,7 +37,9 @@ class Odal {
 
     const filename = `${date}_${migrationName}`;
 
-    return Writer.writeClean('', filename, migrationName)
+    const template = await Utils.cleanTemplate();
+
+    return Writer.writeClean(filename, migrationName, template)
       .then(data => console.log(data.meta))
       .then(() => process.exit(1))
       .catch(err => console.log(err.meta));

@@ -93,8 +93,8 @@ class Writer {
     }
   }
 
-  async writeClean(data = '', filename, migrationName) {
-    return this.writeData(data, filename, migrationName)
+  async writeClean(filename, migrationName, template) {
+    return this.writeData(template, filename, migrationName)
       .then(dataWroted => {
         if (!dataWroted.error) {
           return this.checkIfIndexFileExists(this.registryPath);

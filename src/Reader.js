@@ -62,7 +62,10 @@ class Reader {
         const content = await dataReaded.data;
 
         if (content !== '') {
-          return this.runSingleMigration(dataReaded);
+          const upMigration = await Migrate.getUpMigration([
+            { migration: content, filename: dataReaded.meta }
+          ]);
+          return this.runSingleMigration(upMigration);
         }
 
         return dataReaded;
@@ -79,8 +82,8 @@ class Reader {
     }
   }
 
-  async runSingleMigration({ data, meta }) {
-    return Migrate.runSingleMigration({ database: this.database, data, meta });
+  async runSingleMigration([{ upMigration, filename }]) {
+    return Migrate.runSingleMigration({ database: this.database, upMigration, filename });
   }
 
   async migrate() {
@@ -98,6 +101,7 @@ class Reader {
       })
       .then(filenames => filenames.filter(e => e !== ''))
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
+      .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames))
       .then(migrationProcessed => this.runMigrations(migrationProcessed))
       .then(resultOfMigration =>
         resultOfMigration.forEach(dataMigrated =>
@@ -128,7 +132,7 @@ class Reader {
       .then(fileReaded => {
         // I THINK THAT THIS IF IS USELESS
         if (fileReaded.success) {
-          return `Success on running the migration file for ${fileReaded.meta}`;
+          return `Success on running the migration file for ${fileReaded.filename}`;
         }
       })
       .catch(err => err);
