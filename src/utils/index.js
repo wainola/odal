@@ -42,6 +42,11 @@ class Utils {
     const upSentence = justUp.map(e => e.split('\n')[1]);
     return upSentence;
   }
+
+  static async cleanTemplate() {
+    const markups = await Utils.buildMarkups();
+    return `${markups.up}\n${markups.down}`;
+  }
 }
 
 module.exports = Utils;

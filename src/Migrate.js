@@ -18,12 +18,11 @@ class Migrate {
     }, Promise.resolve([]));
   }
 
-  static async runSingleMigration({ database, data, meta }) {
-    const dataToSend = await data;
+  static async runSingleMigration({ database, upMigration, filename }) {
     database.connect();
     try {
-      const query = await database.queryToExec(dataToSend);
-      return { success: query.success, meta };
+      const query = await database.queryToExec(upMigration);
+      return { success: query.success, filename };
     } catch (err) {
       return { error: err.error, meta: err.meta };
     }
