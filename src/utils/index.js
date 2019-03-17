@@ -1,15 +1,29 @@
 class Utils {
   static async mapFields(fields) {
     // TODO => ADD VALIDATION
-    return fields
-      .map(item => item.split(':'))
-      .reduce((acc, item) => {
-        const formated = item.map(elem =>
-          elem.includes('_') ? elem.replace(/_/, ' ').toUpperCase() : elem.toUpperCase()
-        );
-        acc.push(formated);
-        return acc;
-      }, []);
+    const validatedFields = await Utils.fieldsIncludeScaffoldNotation(fields);
+    if (validatedFields.length !== 0) {
+      return fields
+        .map(item => {
+          return item.split(':');
+        })
+        .reduce((acc, item) => {
+          const formated = item.map(elem =>
+            elem.includes('_') ? elem.replace(/_/, ' ').toUpperCase() : elem.toUpperCase()
+          );
+          acc.push(formated);
+          return acc;
+        }, []);
+    }
+
+    return fields.reduce((acc, item) => {
+      acc.push([item.toUpperCase()]);
+      return acc;
+    }, []);
+  }
+
+  static async fieldsIncludeScaffoldNotation(fiels) {
+    return fiels.map(e => e.includes(':')).filter(Boolean);
   }
 
   static async buildQuery(mappedFields) {
