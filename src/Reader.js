@@ -102,10 +102,6 @@ class Reader {
       .then(filenames => filenames.filter(e => e !== ''))
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
       .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames))
-      .then(d => {
-        console.log(d);
-        return d;
-      })
       .then(migrationProcessed => this.runMigrations(migrationProcessed))
       .then(resultOfMigration =>
         resultOfMigration.forEach(dataMigrated =>

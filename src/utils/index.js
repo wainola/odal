@@ -53,7 +53,9 @@ class Utils {
 
   static async getUpSentences(sentences) {
     const justUp = sentences.map(s => s.split('---').filter(e => e !== '')[0]);
-    const upSentence = justUp.map(e => e.split('\n')[1]);
+    const upSentence = justUp.map(e => {
+      return e.split('\n').filter(elem => elem !== '')[1];
+    });
     return upSentence;
   }
 
