@@ -21,8 +21,8 @@ class Utils {
   }
 
   static async buildMarkups() {
-    const up = `--- UP`;
-    const down = `--- DOWN`;
+    const up = `--- UP\n`;
+    const down = `--- DOWN\n`;
     return { up, down };
   }
 
@@ -35,6 +35,12 @@ class Utils {
     const result = `${markups.up}\n${up}\n${markups.down}\n${down}`;
 
     return result;
+  }
+
+  static async getUpSentences(sentences) {
+    const justUp = sentences.map(s => s.split('---').filter(e => e !== '')[0]);
+    const upSentence = justUp.map(e => e.split('\n')[1]);
+    return upSentence;
   }
 }
 

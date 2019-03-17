@@ -98,6 +98,7 @@ class Reader {
       })
       .then(filenames => filenames.filter(e => e !== ''))
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
+      .then(d => Migrate.getUpMigration(d))
       .then(migrationProcessed => this.runMigrations(migrationProcessed))
       .then(resultOfMigration =>
         resultOfMigration.forEach(dataMigrated =>
