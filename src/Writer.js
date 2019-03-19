@@ -1,11 +1,13 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
+const Migrate = require('./Migrate');
+const Database = require('./services/database');
 
 const { NODE_ENV } = process.env;
 
 class Writer {
-  constructor() {
+  constructor(database) {
     this.registryPath =
       NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
 
@@ -13,6 +15,24 @@ class Writer {
     this.mkdir = promisify(fs.mkdir);
     this.writeFile = promisify(fs.writeFile);
     this.readFile = promisify(fs.readFile);
+    this.database = database;
+  }
+
+  async createRegistryTable() {
+    try {
+      this.database.connect();
+      const q = `SELECT 'exists' FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'registry'`;
+      const query = await this.database.queryToExec(q);
+      if (!query[0]['?column?']) {
+        const createRegistryTable = `CREATE TABLE registry (id uuid not null primary key default gen_random_uuid(), filename text not null, createdAt timestamp not null default now(), updatedAt timestamp default null);`;
+
+        const queryCreation = await this.database.queryToExec(createRegistryTable);
+        console.log(queryCreation);
+      }
+      console.log('query', query);
+    } catch (err) {
+      console.log('error:::', err);
+    }
   }
 
   // CHECK IF REGISTRY DIRECTORY EXISTS => RETURN BOOLEAN
@@ -103,14 +123,23 @@ class Writer {
       })
       .then(checkedIndexFile => {
         if (!checkedIndexFile.error) {
+          console.log('query', query);
+          console.log('query', query);
           return this.writeIndexFile(`${this.registryPath}/odal_index`, filename);
         }
       })
       .catch(err => err);
   }
 
+  async persistRegistry(wrotedData) {
+    // const filename = wrotedData.meta.split(' ')[0].split('.')[0];
+    // return Migrate.insertOnRegistryTable(this.database, filename);
+    return wrotedData;
+  }
+
   // WRITE FILE
   async writeMigrationFile(tablename, filename, dataToWrite) {
+    await this.createRegistryTable();
     // CHECK IF FOLDER REGISTRY EXISTS
     return (
       this.checkIfRegistryDirectoryExits()
@@ -162,10 +191,12 @@ class Writer {
             }
           }
         })
+        .then(wrotedData => this.persistRegistry(wrotedData))
+        .then(d => console.log('d:', d))
         .then(wrotedToIndex => wrotedToIndex)
         .catch(err => console.log('Some error', err))
     );
   }
 }
 
-module.exports = new Writer();
+module.exports = new Writer(Database);

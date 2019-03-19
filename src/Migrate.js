@@ -37,6 +37,13 @@ class Migrate {
     }, []);
     return upMigrationsProcessed;
   }
+
+  static async insertOnRegistryTable(database, filename) {
+    database.connect();
+    const query = `INSERT INTO registry (filename) VALUES (${filename}) RETURNING *;`;
+    const q = await database.queryToExec(query);
+    return q;
+  }
 }
 
 module.exports = Migrate;
