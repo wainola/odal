@@ -4,15 +4,8 @@ const Reader = require('./Reader');
 const Utils = require('./utils');
 
 class Odal {
-  static version() {
-    console.log('Odal linux version 1.0.0');
-  }
-
-  static getInfo(info) {
-    console.log('The info introduced is:', info);
-  }
-
   static async create(tableName, fields) {
+    console.log('create!!');
     const mappedFields = await Utils.mapFields(fields);
 
     const query = await Utils.buildQuery(mappedFields);

@@ -1,44 +1,18 @@
 #!/usr/bin/env node
 const program = require('commander');
-const moment = require('moment');
 const { promisify } = require('util');
 const fs = require('fs');
 const Database = require('./services/database');
-const Utils = require('./utils');
 const Odal = require('./Odal');
+const { odalIndexPath, fileDirectory, registryPath } = require('./constants');
 
 // FUNCTIONS TO USE AND PROMISIFY
 const readFile = promisify(fs.readFile);
-const unlink = promisify(fs.unlink);
 const writeFile = promisify(fs.writeFile);
 
 program.description('Migration tool');
 
-const { NODE_ENV } = process.env;
-
-const odalIndexPath =
-  NODE_ENV !== 'development'
-    ? `${process.cwd()}/api/migrations/registry/odal_index`
-    : `${process.cwd()}/src/registry/odal_index`;
-
-const fileDirectory =
-  NODE_ENV !== 'development'
-    ? `${process.cwd()}/api/migrations/registry`
-    : `${process.cwd()}/src/registry`;
-
-// CHECK IF DIRECTORIES EXISTS. IF NOT, CREATE THEM
-const registryPath =
-  NODE_ENV !== 'development'
-    ? `${process.cwd()}/api/migrations/registry`
-    : `${process.cwd()}/src/registry`;
-
 const odalIndexExists = fs.existsSync(odalIndexPath);
-
-// GET VERSION
-program.command('version').action(Odal.version);
-
-// testing the passing of arguments
-program.command('getInfo <info>').action(Odal.getInfo);
 
 // GET STATUS OF MIGRATIONS
 program.command('status').action(() => {

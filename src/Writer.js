@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
+const Base = require('./Base');
 
 const { NODE_ENV } = process.env;
 
@@ -29,11 +30,11 @@ class Writer {
   }
 
   // CHECK IF INDEX FILE EXISTS => RETURN BOOLEAN
-  async checkIfIndexFileExists(indexFilePath) {
-    const checkIndexFile = await this.exists(`${indexFilePath}/odal_index`);
-    if (!checkIndexFile) return { error: true, meta: 'Index file doesnt exists' };
-    return { error: false, meta: 'Index file exist' };
-  }
+  // async checkIfIndexFileExists(indexFilePath) {
+  //   const checkIndexFile = await this.exists(`${indexFilePath}/odal_index`);
+  //   if (!checkIndexFile) return { error: true, meta: 'Index file doesnt exists' };
+  //   return { error: false, meta: 'Index file exist' };
+  // }
 
   // CREATE INDEX FILE
   async createIndexFile(indexFilePath) {

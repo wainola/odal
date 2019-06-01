@@ -1,28 +1,14 @@
 require('dotenv').config();
-const fs = require('fs');
-const { promisify } = require('util');
-const Database = require('./services/database');
+const Base = require('./Base');
 const Migrate = require('./Migrate');
 
-const { NODE_ENV } = process.env;
-
-class Reader {
+class Reader extends Base {
   constructor(database) {
-    this.registryPath =
-      NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
-
-    this.readFile = promisify(fs.readFile);
-    this.exists = promisify(fs.exists);
-    this.database = database;
+    super(database);
   }
 
-  async checkIndexFileExists(registryPath) {
-    const checkIndexFileExists = await this.exists(`${registryPath}/odal_index`);
-
-    // UNLIKE WRITER CLASS, WE JUST RETURN TRUE OR FALSE IF THE FILE EXITS
-    if (!checkIndexFileExists) return { error: true, meta: 'Index file doesnt exists ' };
-
-    return { error: false, meta: 'Index file exists' };
+  getRegistryPath() {
+    return this.registryPath;
   }
 
   async readOdalIndexFile(registryPath) {
