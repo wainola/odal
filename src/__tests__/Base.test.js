@@ -20,13 +20,6 @@ describe('Base', () => {
     }
   });
 
-  // afterAll(async () => {
-  //   const eOdalIndex = await exists(`${registryDirPath}/odal_index`);
-  //   if (eOdalIndex) {
-  //     unlink(`${registryDirPath}/odal_index`).then(() => rmDir(registryDirPath));
-  //   }
-  // });
-
   it('Setup correctly the data for the instance', async () => {
     const expectedKeys = ['registryPath', 'readFile', 'exists', 'writeFile', 'database'];
     expect(Object.keys(Base)).toEqual(expectedKeys);
