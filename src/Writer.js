@@ -16,26 +16,6 @@ class Writer {
     this.readFile = promisify(fs.readFile);
   }
 
-  // CHECK IF REGISTRY DIRECTORY EXISTS => RETURN BOOLEAN
-  async checkIfRegistryDirectoryExits() {
-    try {
-      const exitsRegistryFolder = await this.exists(`${this.registryPath}/registry`);
-
-      if (!exitsRegistryFolder) return this.createRegistryFolder(this.registryPath);
-
-      return { error: false, meta: 'directory already exists' };
-    } catch (err) {
-      return { error: true, meta: err };
-    }
-  }
-
-  // CHECK IF INDEX FILE EXISTS => RETURN BOOLEAN
-  // async checkIfIndexFileExists(indexFilePath) {
-  //   const checkIndexFile = await this.exists(`${indexFilePath}/odal_index`);
-  //   if (!checkIndexFile) return { error: true, meta: 'Index file doesnt exists' };
-  //   return { error: false, meta: 'Index file exist' };
-  // }
-
   // CREATE INDEX FILE
   async createIndexFile(indexFilePath) {
     const checkIfIndexExists = await this.checkIfIndexFileExists(indexFilePath);
@@ -64,17 +44,6 @@ class Writer {
       return { error: false, meta: `${dataToWrite}.sql wroted successfully` };
     } catch (err) {
       return { error: true, meta: err };
-    }
-  }
-
-  // CREATE REGISTRY DIRECTORY
-  async createRegistryFolder(registryPath) {
-    try {
-      await this.mkdir(`${registryPath}`);
-
-      return { error: false, meta: 'registry folder successfully created' };
-    } catch (err) {
-      return { error: true, meta: 'registry folder already exists' };
     }
   }
 

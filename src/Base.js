@@ -16,17 +16,39 @@ class Base {
     this.database = database;
   }
 
+  // CHECK IF REGISTRY DIRECTORY EXISTS => RETURN BOOLEAN
+  async checkIfRegistryDirectoryExits() {
+    try {
+      const existsRegistryFolder = await this.exists(this.registryPath);
+
+      if (!existsRegistryFolder) return this.createRegistryFolder(this.registryPath);
+
+      return { error: false, meta: 'directory already exists' };
+    } catch (err) {
+      return { error: true, meta: err };
+    }
+  }
+
+  // CREATE REGISTRY DIRECTORY
+  async createRegistryFolder(registryPath) {
+    try {
+      await this.mkdir(`${registryPath}`);
+
+      return { error: false, meta: 'registry folder successfully created' };
+    } catch (err) {
+      return { error: true, meta: 'registry folder already exists' };
+    }
+  }
+
   async checkIndexFileExists() {
     const checkIndexFileExists = await this.exists(`${this.registryPath}/odal_index`);
 
-    // UNLIKE WRITER CLASS, WE JUST RETURN TRUE OR FALSE IF THE FILE EXITS
     if (!checkIndexFileExists) return { error: true, meta: 'Index file doesnt exists ' };
 
     return { error: false, meta: 'Index file exists' };
   }
 
-  // CREATE INDEX FILE
-  async createIndexFile(indexFilePath) {
+  async createIndexFile() {
     const checkIfIndexExists = await this.checkIndexFileExists();
 
     // IF THE INDEX FILE DOESNT EXISTS, CREATE IT
