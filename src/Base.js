@@ -40,6 +40,7 @@ class Base {
     }
   }
 
+  // CHECK INDEX FILE EXISTS
   async checkIndexFileExists() {
     const checkIndexFileExists = await this.exists(`${this.registryPath}/odal_index`);
 
@@ -48,6 +49,7 @@ class Base {
     return { error: false, meta: 'Index file exists' };
   }
 
+  // CREATE INDEX FILE
   async createIndexFile() {
     const checkIfIndexExists = await this.checkIndexFileExists();
 

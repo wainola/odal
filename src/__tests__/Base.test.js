@@ -20,6 +20,16 @@ describe('Base', () => {
     }
   });
 
+  afterAll(async () => {
+    try {
+      const deleteIndex = await unlink(`${registryDirPath}/odal_index`);
+      const deleteDirectory = await rmDir(registryDirPath);
+      console.log('deletedFile', deleteIndex, deleteDirectory);
+    } catch (err) {
+      console.log('err:', err);
+    }
+  });
+
   it('Setup correctly the data for the instance', async () => {
     const expectedKeys = ['registryPath', 'readFile', 'exists', 'writeFile', 'database'];
     expect(Object.keys(Base)).toEqual(expectedKeys);
@@ -32,8 +42,12 @@ describe('Base', () => {
   });
 
   it('test checkIndexFileExits method', async () => {
-    const existsRegistryFile = await Base.checkIndexFileExists();
-    expect(typeof existsRegistryFile.error).toBe('boolean');
+    try {
+      const existsRegistryFile = await Base.checkIndexFileExists();
+      expect(typeof existsRegistryFile.error).toBe('boolean');
+    } catch (err) {
+      console.log('test checkIndexFileExits method error', err);
+    }
   });
 
   it('test createIndexFile method', async () => {
@@ -50,11 +64,14 @@ describe('Base', () => {
     }
   });
 
-  it('doesnt create index file because already exists', async () => {
+  it('doesnt create index file because already exists', () => {
     writeFile(`${registryDirPath}/odal_index`, '', { flag: 'wx' }).then(async () => {
-      const createIndexFile = await Base.createIndexFile();
-
-      expect(createIndexFile.error).toBe(false);
+      try {
+        const createIndexFile = await Base.createIndexFile();
+        expect(createIndexFile.error).toBe(true);
+      } catch (err) {
+        console.log('err:', err);
+      }
     });
   });
 });
