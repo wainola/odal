@@ -5,32 +5,9 @@ const Base = require('./Base');
 
 const { NODE_ENV } = process.env;
 
-class Writer {
+class Writer extends Base {
   constructor() {
-    this.registryPath =
-      NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
-
-    this.exists = promisify(fs.exists);
-    this.mkdir = promisify(fs.mkdir);
-    this.writeFile = promisify(fs.writeFile);
-    this.readFile = promisify(fs.readFile);
-  }
-
-  // CREATE INDEX FILE
-  async createIndexFile(indexFilePath) {
-    const checkIfIndexExists = await this.checkIfIndexFileExists(indexFilePath);
-
-    // IF THE INDEX FILE DOESNT EXISTS, CREATE IT
-    if (checkIfIndexExists.error) {
-      try {
-        const r = await this.writeFile(`${indexFilePath}/odal_index`, '', { flag: 'wx' });
-        return { error: false, meta: 'Odal file created' };
-      } catch (err) {
-        return { error: true, meta: err };
-      }
-    }
-
-    return { error: false, meta: 'Index file already exists' };
+    super();
   }
 
   // WRITE ON THE INDE FILE

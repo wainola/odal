@@ -30,7 +30,7 @@ describe('Base', () => {
   });
 
   it('Setup correctly the data for the instance', async () => {
-    const expectedKeys = ['registryPath', 'readFile', 'exists', 'writeFile', 'database'];
+    const expectedKeys = ['registryPath', 'readFile', 'exists', 'writeFile', 'mkdir', 'database'];
     expect(Object.keys(Base)).toEqual(expectedKeys);
   });
 

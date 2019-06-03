@@ -13,6 +13,7 @@ class Base {
     this.readFile = promisify(fs.readFile);
     this.exists = promisify(fs.exists);
     this.writeFile = promisify(fs.writeFile);
+    this.mkdir = promisify(fs.mkdir);
     this.database = database;
   }
 
