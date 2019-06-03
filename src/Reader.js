@@ -1,6 +1,7 @@
 require('dotenv').config();
 const Base = require('./Base');
 const Migrate = require('./Migrate');
+const Database = require('./services/database');
 
 class Reader extends Base {
   constructor(database) {

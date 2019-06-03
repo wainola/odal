@@ -1,7 +1,6 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
-const Database = require('./services/database');
 
 const { NODE_ENV } = process.env;
 
@@ -22,7 +21,7 @@ class Base {
     try {
       const existsRegistryFolder = await this.exists(this.registryPath);
 
-      if (!existsRegistryFolder) return this.createRegistryFolder(this.registryPath);
+      if (!existsRegistryFolder) return this.createRegistryFolder();
 
       return { error: false, meta: 'directory already exists' };
     } catch (err) {
@@ -31,9 +30,9 @@ class Base {
   }
 
   // CREATE REGISTRY DIRECTORY
-  async createRegistryFolder(registryPath) {
+  async createRegistryFolder() {
     try {
-      await this.mkdir(`${registryPath}`);
+      await this.mkdir(`${this.registryPath}`);
 
       return { error: false, meta: 'registry folder successfully created' };
     } catch (err) {
@@ -68,4 +67,4 @@ class Base {
   }
 }
 
-module.exports = new Base(Database);
+module.exports = Base;

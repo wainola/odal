@@ -1,13 +1,10 @@
 require('dotenv').config();
-const fs = require('fs');
-const { promisify } = require('util');
 const Base = require('./Base');
-
-const { NODE_ENV } = process.env;
+const Database = require('./services/database');
 
 class Writer extends Base {
-  constructor() {
-    super();
+  constructor(database) {
+    super(database);
   }
 
   // WRITE ON THE INDE FILE
@@ -115,4 +112,4 @@ class Writer extends Base {
   }
 }
 
-module.exports = new Writer();
+module.exports = new Writer(Database);
