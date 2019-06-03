@@ -3,10 +3,6 @@ const Base = require('./Base');
 const Database = require('./services/database');
 
 class Writer extends Base {
-  constructor(database) {
-    super(database);
-  }
-
   // WRITE ON THE INDE FILE
   async writeIndexFile(filepath, dataToWrite) {
     try {

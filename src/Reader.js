@@ -4,10 +4,6 @@ const Migrate = require('./Migrate');
 const Database = require('./services/database');
 
 class Reader extends Base {
-  constructor(database) {
-    super(database);
-  }
-
   getRegistryPath() {
     return this.registryPath;
   }
