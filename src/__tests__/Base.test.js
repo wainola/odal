@@ -7,7 +7,6 @@ const exists = promisify(fs.exists);
 const rmDir = promisify(fs.rmdirSync);
 const unlink = promisify(fs.unlink);
 const writeFile = promisify(fs.writeFile);
-const readdir = promisify(fs.readdir);
 
 const registryDirPath = `${process.cwd()}/src/__tests__/registry`;
 
