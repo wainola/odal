@@ -4,12 +4,12 @@ const Database = require('./services/database');
 
 class Writer extends Base {
   // WRITE ON THE INDE FILE
-  async writeIndexFile(filepath, dataToWrite) {
+  async writeIndexFile(dataToWrite) {
     try {
-      const dataWroted = await this.readFile(filepath, 'utf8');
+      const dataWroted = await this.readFile(`${this.registryPath}/odal_index`, 'utf8');
       const dToW = `${dataWroted}\n${dataToWrite}`;
 
-      await this.writeFile(filepath, dToW);
+      await this.writeFile(`${this.registryPath}/odal_index`, dToW);
 
       return { error: false, meta: `${dataToWrite}.sql wroted successfully` };
     } catch (err) {
@@ -23,7 +23,8 @@ class Writer extends Base {
 
       return {
         error: false,
-        meta: `Migration file for table ${tablename} wroted successfully!`
+        meta: `Migration file for table ${tablename} wroted successfully!`,
+        dataToWrite: filename
       };
     } catch (err) {
       return {
@@ -51,60 +52,9 @@ class Writer extends Base {
 
   // WRITE FILE
   async writeMigrationFile(tablename, filename, dataToWrite) {
-    // CHECK IF FOLDER REGISTRY EXISTS
-    return (
-      this.checkIfRegistryDirectoryExits()
-        .then(registryFolderResponse => {
-          return registryFolderResponse;
-        })
-        // IF FOLDER IS CREATED THEN WE CREATE THE MIGRATON FILE
-        .then(async data => {
-          if (!data.error) {
-            return this.writeData(dataToWrite, filename, tablename);
-          }
-
-          // IF THE FOLDER ALREADY EXISTS, CREATE THE MIGRATION FILE AND
-          // WE WRITE ON THE INDEX FILE
-          return this.writeData(dataToWrite, filename, tablename);
-        })
-        // NOW WE WROTE TO THE INDEX FILE
-        .then(async migrationFileWroted => {
-          if (!migrationFileWroted.error) {
-            try {
-              const checkIndexFile = await this.checkIfIndexFileExists(this.registryPath);
-              return checkIndexFile;
-            } catch (err) {
-              return err;
-            }
-          }
-        })
-        // IF THE INDEX FILE DOESNT EXISTS, WE CREATE IT
-        .then(async indexFileChecked => {
-          if (indexFileChecked.error) {
-            try {
-              const createIndexFile = await this.createIndexFile(this.registryPath);
-              return createIndexFile;
-            } catch (err) {
-              return err;
-            }
-          }
-
-          // IF THE INDEX FILE EXISTS, return
-          return indexFileChecked;
-        })
-        .then(async indexFilecreated => {
-          if (!indexFilecreated.error) {
-            try {
-              const wIndex = await this.writeIndexFile(`${this.registryPath}/odal_index`, filename);
-              return wIndex;
-            } catch (err) {
-              return err;
-            }
-          }
-        })
-        .then(wrotedToIndex => wrotedToIndex)
-        .catch(err => console.log('Some error', err))
-    );
+    return this.writeData(dataToWrite, filename, tablename)
+      .then(migrationFileWrote => this.writeIndexFile(migrationFileWrote.dataToWrite))
+      .catch(err => err);
   }
 }
 

@@ -38,6 +38,7 @@ const customLoggers = {
 class Logger {
   constructor(customLoggers) {
     this.logger = new Signale(customLoggers);
+    this.signale = new Signale();
   }
 
   async printError(text) {
@@ -62,6 +63,10 @@ class Logger {
 
   async printSetupTerminated(text) {
     return this.logger.finish(text);
+  }
+
+  async genericMessage(text) {
+    this.signale.watch(text);
   }
 }
 

@@ -7,7 +7,9 @@ const { NODE_ENV } = process.env;
 class Base {
   constructor(database) {
     this.registryPath =
-      NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
+      NODE_ENV !== 'test'
+        ? `${process.cwd()}/migrations/registry`
+        : `${process.cwd()}/src/__tests__/registry`;
 
     this.readFile = promisify(fs.readFile);
     this.exists = promisify(fs.exists);

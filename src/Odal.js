@@ -11,8 +11,8 @@ const writeFile = promisify(fs.writeFile);
 
 class Odal {
   static async init() {
-    Logger.printInfo('Setup everything for your migrations');
-    Logger.printInfo('Creating migrations directory')
+    Logger.printInfo('Setup everything for your migrations')
+      .then(() => Logger.printInfo('Creating migrations directory'))
       .then(() => mkdir(`${process.cwd()}/migrations`))
       .then(() => Logger.printSetupConfigFile('Creating config file'))
       .then(() => writeFile(`${process.cwd()}/migrations/config.yml`, '', { flag: 'wx' }))
@@ -24,7 +24,6 @@ class Odal {
   }
 
   static async create(tableName, fields) {
-    console.log('create!!');
     const mappedFields = await Utils.mapFields(fields);
 
     const query = await Utils.buildQuery(mappedFields);
@@ -36,8 +35,8 @@ class Odal {
     const sqlQuery = await Utils.buildTableQuery(tableName, query);
 
     return Writer.writeMigrationFile(tableName, filename, sqlQuery)
-      .then(migration => console.log(migration.meta))
-      .catch(err => console.log('Error on creating the migration file', err.meta));
+      .then(migration => Logger.printInfo(migration.meta))
+      .catch(err => Logger.printError('Error on creating the migration file', err.meta));
   }
 
   static async migrate() {
