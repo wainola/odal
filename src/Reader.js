@@ -8,10 +8,12 @@ class Reader extends Base {
     return this.registryPath;
   }
 
-  async readOdalIndexFile(registryPath) {
-    const readedFile = this.readFile(`${registryPath}/odal_index`, 'utf8');
-
-    return { error: false, meta: readedFile };
+  async readOdalIndexFile() {
+    try {
+      return this.readFile(`${this.registryPath}/odal_index`, 'utf8');
+    } catch (err) {
+      return err;
+    }
   }
 
   async processMigrationFiles(filenames) {
@@ -70,29 +72,22 @@ class Reader extends Base {
   }
 
   async migrate() {
-    const checkOdalIndexFile = await this.checkIndexFileExists(this.registryPath);
-
-    if (checkOdalIndexFile.error) {
-      return { error: true, meta: 'No migrations to run' };
-    }
-
     return this.readOdalIndexFile(this.registryPath)
-      .then(indexFileContent => indexFileContent.meta)
       .then(dataWroted => {
         const filenames = dataWroted.split('\n');
-        return filenames;
+        const filteredFilenames = filenames.filter(e => e !== '');
+        return filteredFilenames;
       })
-      .then(filenames => filenames.filter(e => e !== ''))
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
-      .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames))
-      .then(migrationProcessed => this.runMigrations(migrationProcessed))
-      .then(resultOfMigration =>
-        resultOfMigration.forEach(dataMigrated =>
-          console.log(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
-        )
-      )
-      .then(() => process.exit())
-      .catch(err => console.log(err));
+      .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames));
+    // .then(migrationProcessed => this.runMigrations(migrationProcessed))
+    // .then(resultOfMigration =>
+    //   resultOfMigration.forEach(dataMigrated =>
+    //     console.log(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
+    //   )
+    // )
+    // .then(() => process.exit())
+    // .catch(err => console.log(err));
   }
 
   async migrateLast() {
