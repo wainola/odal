@@ -39,10 +39,6 @@ class Odal {
       .catch(err => Logger.printError('Error on creating the migration file', err.meta));
   }
 
-  static async migrate() {
-    return Reader.migrate();
-  }
-
   static async createClean(migrationName) {
     const date = moment().unix();
 
@@ -54,6 +50,10 @@ class Odal {
       .then(data => Logger.printInfo(data.meta))
       .then(() => process.exit(1))
       .catch(err => Logger.printError(err.meta));
+  }
+
+  static async migrate() {
+    return Reader.migrate();
   }
 
   static async migrateLast() {
