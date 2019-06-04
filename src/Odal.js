@@ -51,9 +51,9 @@ class Odal {
     const template = await Utils.cleanTemplate();
 
     return Writer.writeClean(filename, migrationName, template)
-      .then(data => console.log(data.meta))
+      .then(data => Logger.printInfo(data.meta))
       .then(() => process.exit(1))
-      .catch(err => console.log(err.meta));
+      .catch(err => Logger.printError(err.meta));
   }
 
   static async migrateLast() {

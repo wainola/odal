@@ -36,17 +36,7 @@ class Writer extends Base {
 
   async writeClean(filename, migrationName, template) {
     return this.writeData(template, filename, migrationName)
-      .then(dataWroted => {
-        if (!dataWroted.error) {
-          return this.checkIfIndexFileExists(this.registryPath);
-        }
-        return dataWroted.meta;
-      })
-      .then(checkedIndexFile => {
-        if (!checkedIndexFile.error) {
-          return this.writeIndexFile(`${this.registryPath}/odal_index`, filename);
-        }
-      })
+      .then(migrationFileWrote => this.writeIndexFile(migrationFileWrote.dataToWrite))
       .catch(err => err);
   }
 
