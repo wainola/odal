@@ -1,10 +1,17 @@
 {
-    "editor.rulers": [120],
-    "editor.tabSize": 2,
-    "search.exclude": {
-      "flow-typed": true
-    },
-    "editor.formatOnSave": true,
-    "eslint.autoFixOnSave": true,
-    "html.format.enable": false
+  "editor.rulers": [120],
+  "editor.tabSize": 2,
+  "search.exclude": {
+    "flow-typed": true
+  },
+  "editor.formatOnSave": true,
+  "eslint.autoFixOnSave": true,
+  "html.format.enable": false,
+  "emojisense.languages": {
+    "markdown": true,
+    "git-commit": false,
+    "plaintext": false,
+    "json": true,
+    "javascript": true
   }
+}

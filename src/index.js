@@ -14,6 +14,8 @@ program.description('Migration tool');
 
 const odalIndexExists = fs.existsSync(odalIndexPath);
 
+program.command('init').action(Odal.init);
+
 // GET STATUS OF MIGRATIONS
 program.command('status').action(() => {
   console.log('cwd', process.cwd());

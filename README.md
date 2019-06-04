@@ -9,3 +9,4 @@
 - use table on db to store the current migrations. If one migrations is on storage, change the attribute up (priority).
 - read some configuration file on `.yml` format (priority).
 - ~~add markup to the `.sql` with `up` and `down`.~~
+- make command init to setup everything

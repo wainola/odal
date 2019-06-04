@@ -1,9 +1,28 @@
 const moment = require('moment');
+const fs = require('fs');
+const { promisify } = require('util');
 const Writer = require('./Writer');
 const Reader = require('./Reader');
 const Utils = require('./utils');
+const Logger = require('./Logger');
+
+const mkdir = promisify(fs.mkdir);
+const writeFile = promisify(fs.writeFile);
 
 class Odal {
+  static async init() {
+    Logger.printInfo('Setup everything for your migrations');
+    Logger.printInfo('Creating migrations directory')
+      .then(() => mkdir(`${process.cwd()}/migrations`))
+      .then(() => Logger.printSetupConfigFile('Creating config file'))
+      .then(() => writeFile(`${process.cwd()}/migrations/config.yml`, '', { flag: 'wx' }))
+      .then(() => Logger.printRegistryFolder('Generating registry folder'))
+      .then(() => mkdir(`${process.cwd()}/migrations/registry`))
+      .then(() => Logger.printInfo('Creating odal_index file'))
+      .then(() => writeFile(`${process.cwd()}/migrations/registry/odal_index`, '', { flag: 'wx' }))
+      .then(() => Logger.printSetupTerminated('You are ready to go!'));
+  }
+
   static async create(tableName, fields) {
     console.log('create!!');
     const mappedFields = await Utils.mapFields(fields);
