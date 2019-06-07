@@ -2,6 +2,7 @@ require('dotenv').config();
 const Base = require('./Base');
 const Migrate = require('./Migrate');
 const Database = require('./services/database');
+const Logger = require('./Logger');
 
 class Reader extends Base {
   getRegistryPath() {
@@ -79,15 +80,15 @@ class Reader extends Base {
         return filteredFilenames;
       })
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
-      .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames));
-    // .then(migrationProcessed => this.runMigrations(migrationProcessed))
-    // .then(resultOfMigration =>
-    //   resultOfMigration.forEach(dataMigrated =>
-    //     console.log(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
-    //   )
-    // )
-    // .then(() => process.exit())
-    // .catch(err => console.log(err));
+      .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames))
+      .then(migrationProcessed => this.runMigrations(migrationProcessed))
+      .then(resultOfMigration =>
+        resultOfMigration.forEach(dataMigrated =>
+          Logger.printSuccess(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
+        )
+      )
+      .then(() => process.exit())
+      .catch(err => Logger.printError(err));
   }
 
   async migrateLast() {
