@@ -7,6 +7,11 @@ const ErrorsDictionary = require('./Errors');
 const Utils = require('./utils');
 
 class Reader extends Base {
+  async getStatus() {
+    await this.database.connect();
+    return this.database.getSchemas().then(d => console.log('d::', d));
+  }
+
   getRegistryPath() {
     return this.registryPath;
   }
