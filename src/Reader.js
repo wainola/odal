@@ -116,6 +116,8 @@ class Reader extends Base {
       })
       .catch(err => err);
   }
+
+  async remove() {}
 }
 
 module.exports = new Reader(Database);
