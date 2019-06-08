@@ -1,34 +1,20 @@
 require('dotenv').config();
-const fs = require('fs');
-const { promisify } = require('util');
-const Database = require('./services/database');
+const Base = require('./Base');
 const Migrate = require('./Migrate');
+const Database = require('./services/database');
+const Logger = require('./Logger');
 
-const { NODE_ENV } = process.env;
-
-class Reader {
-  constructor(database) {
-    this.registryPath =
-      NODE_ENV !== 'test' ? `${process.cwd()}/registry` : `${process.cwd()}/src/__tests__/registry`;
-
-    this.readFile = promisify(fs.readFile);
-    this.exists = promisify(fs.exists);
-    this.database = database;
+class Reader extends Base {
+  getRegistryPath() {
+    return this.registryPath;
   }
 
-  async checkIndexFileExists(registryPath) {
-    const checkIndexFileExists = await this.exists(`${registryPath}/odal_index`);
-
-    // UNLIKE WRITER CLASS, WE JUST RETURN TRUE OR FALSE IF THE FILE EXITS
-    if (!checkIndexFileExists) return { error: true, meta: 'Index file doesnt exists ' };
-
-    return { error: false, meta: 'Index file exists' };
-  }
-
-  async readOdalIndexFile(registryPath) {
-    const readedFile = this.readFile(`${registryPath}/odal_index`, 'utf8');
-
-    return { error: false, meta: readedFile };
+  async readOdalIndexFile() {
+    try {
+      return this.readFile(`${this.registryPath}/odal_index`, 'utf8');
+    } catch (err) {
+      return err;
+    }
   }
 
   async processMigrationFiles(filenames) {
@@ -87,29 +73,22 @@ class Reader {
   }
 
   async migrate() {
-    const checkOdalIndexFile = await this.checkIndexFileExists(this.registryPath);
-
-    if (checkOdalIndexFile.error) {
-      return { error: true, meta: 'No migrations to run' };
-    }
-
     return this.readOdalIndexFile(this.registryPath)
-      .then(indexFileContent => indexFileContent.meta)
       .then(dataWroted => {
         const filenames = dataWroted.split('\n');
-        return filenames;
+        const filteredFilenames = filenames.filter(e => e !== '');
+        return filteredFilenames;
       })
-      .then(filenames => filenames.filter(e => e !== ''))
       .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
       .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames))
       .then(migrationProcessed => this.runMigrations(migrationProcessed))
       .then(resultOfMigration =>
         resultOfMigration.forEach(dataMigrated =>
-          console.log(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
+          Logger.printSuccess(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
         )
       )
       .then(() => process.exit())
-      .catch(err => console.log(err));
+      .catch(err => Logger.printError(err));
   }
 
   async migrateLast() {
