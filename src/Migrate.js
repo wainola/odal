@@ -19,7 +19,6 @@ class Migrate {
   }
 
   static async runDownMigrations(database, downMigrations) {
-    console.log('downMigrations');
     await database.connect();
     return downMigrations.reduce(async (accumulator, { downMigration, filename }) => {
       try {
