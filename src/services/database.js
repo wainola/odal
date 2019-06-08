@@ -3,13 +3,13 @@ const yaml = require('yaml');
 const fs = require('fs');
 const { Client } = require('pg');
 
-const { DATABASE_URL, NODE_ENV } = process.env;
+const { NODE_ENV } = process.env;
 
 const existsMigrationsFolder = fs.existsSync(`${process.cwd()}/migrations`);
 
 let databaseUrl;
 
-if (existsMigrationsFolder && NODE_ENV !== 'development') {
+if (existsMigrationsFolder) {
   const file = fs.readFileSync(`${process.cwd()}/migrations/config.yml`, 'utf8');
   const parsed = yaml.parse(file);
   if (NODE_ENV !== 'development') {

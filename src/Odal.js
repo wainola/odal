@@ -63,7 +63,11 @@ class Odal {
       .catch(err => console.log(err));
   }
 
-  static async remove() {}
+  static async remove() {
+    return Reader.remove()
+      .then(response => Logger.printInfo(response.meta))
+      .catch(err => Logger.printError(err.meta));
+  }
 
   static async removeLast() {}
 
