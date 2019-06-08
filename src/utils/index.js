@@ -59,9 +59,27 @@ class Utils {
     return upSentence;
   }
 
+  static async getDownSentences(sentences) {
+    const justDown = sentences.map(
+      s =>
+        s
+          .split('---')
+          .filter(e => e !== '')
+          .map(downSentence => downSentence.trim())[1]
+    );
+    const downSentences = justDown.map(e => e.split('\n').filter(elem => elem !== '')[1]);
+    return downSentences;
+  }
+
   static async cleanTemplate() {
     const markups = await Utils.buildMarkups();
     return `${markups.up}\n${markups.down}`;
+  }
+
+  static async filterFileNames(dataWroted) {
+    const filenames = dataWroted.split('\n');
+    const filteredFilenames = filenames.filter(e => e !== '');
+    return filteredFilenames;
   }
 }
 

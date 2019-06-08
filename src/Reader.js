@@ -3,18 +3,12 @@ const Base = require('./Base');
 const Migrate = require('./Migrate');
 const Database = require('./services/database');
 const Logger = require('./Logger');
+const ErrorsDictionary = require('./Errors');
+const Utils = require('./utils');
 
 class Reader extends Base {
   getRegistryPath() {
     return this.registryPath;
-  }
-
-  async readOdalIndexFile() {
-    try {
-      return this.readFile(`${this.registryPath}/odal_index`, 'utf8');
-    } catch (err) {
-      return err;
-    }
   }
 
   async processMigrationFiles(filenames) {
@@ -36,6 +30,11 @@ class Reader extends Base {
 
   async runMigrations(migrations) {
     return Migrate.runMigrations(this.database, migrations);
+  }
+
+  async runDownMigrations(downMigrations) {
+    console.log('runDownMigrations');
+    return Migrate.runDownMigrations(this.database, downMigrations);
   }
 
   async getLastMigration(migrationData) {
@@ -98,7 +97,7 @@ class Reader extends Base {
           try {
             return this.readOdalIndexFile(this.registryPath);
           } catch (err) {
-            return { error: true, meta: 'No migrations to run' };
+            return ErrorsDictionary['no-migrations'];
           }
         }
       })
@@ -115,6 +114,31 @@ class Reader extends Base {
         }
       })
       .catch(err => err);
+  }
+
+  async remove() {
+    return this.checkIndexFileExists()
+      .then(async indexFileChecked => {
+        if (!indexFileChecked.error) {
+          try {
+            return this.readOdalIndexFile();
+          } catch (err) {
+            return ErrorsDictionary['no-migrations'];
+          }
+        }
+      })
+      .then(odalIndexFileContent => odalIndexFileContent)
+      .then(indexFileContent => Utils.filterFileNames(indexFileContent))
+      .then(filteredFilenames => this.processMigrationFiles(filteredFilenames))
+      .then(migrationData => Migrate.getDownMigration(migrationData))
+      .then(downMigrations => this.runDownMigrations(downMigrations))
+      .then(resultOfMigrations => {
+        resultOfMigrations.forEach(dataMigrated => {
+          Logger.printSuccess(`Success on applying down migration on ${dataMigrated.meta}.sql`);
+        });
+      })
+      .then(() => process.exit())
+      .catch(err => Logger.printError(err));
   }
 }
 

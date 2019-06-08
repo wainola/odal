@@ -46,7 +46,7 @@ class Base {
   async checkIndexFileExists() {
     const checkIndexFileExists = await this.exists(`${this.registryPath}/odal_index`);
 
-    if (!checkIndexFileExists) return { error: true, meta: 'Index file doesnt exists ' };
+    if (!checkIndexFileExists) return { error: true, meta: "Index file doesn't exists" };
 
     return { error: false, meta: 'Index file exists' };
   }
@@ -66,6 +66,14 @@ class Base {
     }
 
     return { error: false, meta: 'Index file already exists' };
+  }
+
+  async readOdalIndexFile() {
+    try {
+      return this.readFile(`${this.registryPath}/odal_index`, 'utf8');
+    } catch (err) {
+      return err;
+    }
   }
 }
 
