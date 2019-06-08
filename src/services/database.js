@@ -1,7 +1,22 @@
 require('dotenv').config();
+const yaml = require('yaml');
+const fs = require('fs');
 const { Client } = require('pg');
 
-const { DATABASE_URL } = process.env;
+const { DATABASE_URL, NODE_ENV } = process.env;
+
+const existsMigrationsFolder = fs.existsSync(`${process.cwd()}/migrations`);
+
+let databaseUrl;
+
+if (existsMigrationsFolder && NODE_ENV !== 'development') {
+  const file = fs.readFileSync(`${process.cwd()}/migrations/config.yml`, 'utf8');
+  const parsed = yaml.parse(file);
+  if (NODE_ENV !== 'development') {
+    databaseUrl = parsed.production.database_url;
+  }
+  databaseUrl = parsed.development.database_url;
+}
 
 class Database {
   constructor(connectionString) {
@@ -58,4 +73,4 @@ class Database {
   }
 }
 
-module.exports = new Database(DATABASE_URL);
+module.exports = new Database(databaseUrl);
