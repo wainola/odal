@@ -32,6 +32,11 @@ class Reader extends Base {
     return Migrate.runMigrations(this.database, migrations);
   }
 
+  async runDownMigrations(downMigrations) {
+    console.log('runDownMigrations');
+    return Migrate.runDownMigrations(this.database, downMigrations);
+  }
+
   async getLastMigration(migrationData) {
     return migrationData.pop();
   }
@@ -126,7 +131,14 @@ class Reader extends Base {
       .then(indexFileContent => Utils.filterFileNames(indexFileContent))
       .then(filteredFilenames => this.processMigrationFiles(filteredFilenames))
       .then(migrationData => Migrate.getDownMigration(migrationData))
-      .then(d => console.log('d::', d));
+      .then(downMigrations => this.runDownMigrations(downMigrations))
+      .then(resultOfMigrations => {
+        resultOfMigrations.forEach(dataMigrated => {
+          Logger.printSuccess(`Success on applying down migration on ${dataMigrated.meta}.sql`);
+        });
+      })
+      .then(() => process.exit())
+      .catch(err => Logger.printError(err));
   }
 }
 
