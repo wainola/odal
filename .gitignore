@@ -4,6 +4,7 @@
 
 registry/
 migrations/
+config.yml
 
 ### Linux ###
 *~

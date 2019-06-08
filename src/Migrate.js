@@ -37,6 +37,12 @@ class Migrate {
     }, []);
     return upMigrationsProcessed;
   }
+
+  static async getDownMigration(migrationData) {
+    const sentences = migrationData.map(data => data.migration);
+    const downSentences = await Utils.getDownSentences(sentences);
+    return downSentences;
+  }
 }
 
 module.exports = Migrate;
