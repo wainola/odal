@@ -3,6 +3,14 @@ const Base = require('./Base');
 const Database = require('./services/database');
 
 class Writer extends Base {
+  async createPGCryptoExtension() {
+    return this.createPGCryptoExtensionOnInit();
+  }
+
+  async createRegistryTable() {
+    return this.createRegistryTableOnInit();
+  }
+
   // WRITE ON THE INDE FILE
   async writeIndexFile(dataToWrite) {
     try {
