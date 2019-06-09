@@ -51,6 +51,7 @@ class Writer extends Base {
   // WRITE FILE
   async writeMigrationFile(tablename, filename, dataToWrite) {
     return this.writeData(dataToWrite, filename, tablename)
+      .then(migrationMetaData => this.updateRegistryTable(migrationMetaData))
       .then(migrationFileWrote => this.writeIndexFile(migrationFileWrote.dataToWrite))
       .catch(err => err);
   }
