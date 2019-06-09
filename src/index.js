@@ -15,6 +15,8 @@ const odalIndexExists = fs.existsSync(odalIndexPath);
 
 program.command('init').action(Odal.init);
 
+program.command('postgres').action(Odal.postgres);
+
 // GET STATUS OF MIGRATIONS
 program.command('status').action(() => {
   console.log('cwd', process.cwd());

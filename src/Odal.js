@@ -20,7 +20,19 @@ class Odal {
       .then(() => mkdir(`${process.cwd()}/migrations/registry`))
       .then(() => Logger.printInfo('Creating odal_index file'))
       .then(() => writeFile(`${process.cwd()}/migrations/registry/odal_index`, '', { flag: 'wx' }))
-      .then(() => Logger.printSetupTerminated('You are ready to go!'));
+      .then(() => Logger.printSetupTerminated('You are ready to go!'))
+      .catch(err => Logger.printError(err));
+  }
+
+  static async postgres() {
+    return Logger.printInfo('Setup for postgres DB')
+      .then(() => Logger.printInfo('Creating pgCrypto extension'))
+      .then(() => Writer.createPGCryptoExtension())
+      .then(() => Logger.printInfo('Creatin registry table'))
+      .then(() => Writer.createRegistryTable())
+      .then(() => Logger.printInfo('You are ready to go with Postgres'))
+      .then(() => process.exit())
+      .catch(err => Logger.printError(err));
   }
 
   static async create(tableName, fields) {

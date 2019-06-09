@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
+const { pgcryptoQuery, registryTableQuery } = require('./constants');
 
 const { NODE_ENV } = process.env;
 
@@ -73,6 +74,26 @@ class Base {
       return this.readFile(`${this.registryPath}/odal_index`, 'utf8');
     } catch (err) {
       return err;
+    }
+  }
+
+  async createPGCryptoExtensionOnInit() {
+    await this.database.connect();
+    try {
+      const q = await this.database.queryToExec(pgcryptoQuery);
+      return { success: q.success };
+    } catch (err) {
+      return { error: err.error, meta: err.meta };
+    }
+  }
+
+  async createRegistryTableOnInit() {
+    await this.database.connect();
+    try {
+      const q = await this.database.queryToExec(registryTableQuery);
+      return { success: q.success };
+    } catch (err) {
+      return { error: err.error, meta: err.meta };
     }
   }
 }

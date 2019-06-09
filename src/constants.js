@@ -18,8 +18,22 @@ const registryPath =
     ? `${process.cwd()}/api/migrations/registry`
     : `${process.cwd()}/src/registry`;
 
+const pgcryptoQuery = `
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+`;
+
+const registryTableQuery = `
+CREATE TABLE registry (
+id uuid not null primary key default gen_random_uuid(),
+migration_name text not null,
+createAt timestamp not null default now(),
+migratedAt timestamp default null
+)
+`;
 module.exports = {
   odalIndexPath,
   fileDirectory,
-  registryPath
+  registryPath,
+  pgcryptoQuery,
+  registryTableQuery
 };
