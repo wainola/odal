@@ -48,6 +48,7 @@ class Odal {
 
     return Writer.writeMigrationFile(tableName, filename, sqlQuery)
       .then(migration => Logger.printInfo(migration.meta))
+      .then(() => process.exit())
       .catch(err => Logger.printError('Error on creating the migration file', err.meta));
   }
 

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
+const moment = require('moment');
 const { pgcryptoQuery, registryTableQuery } = require('./constants');
 
 const { NODE_ENV } = process.env;
@@ -94,6 +95,20 @@ class Base {
       return { success: q.success };
     } catch (err) {
       return { error: err.error, meta: err.meta };
+    }
+  }
+
+  async updateRegistryTable(migrationMetaData) {
+    await this.database.connect();
+    try {
+      const q = await this.database.queryToExec(`
+        INSERT INTO registry (migration_name) VALUES ('${
+          migrationMetaData.dataToWrite
+        }') RETURNING *;
+      `);
+      return migrationMetaData;
+    } catch (err) {
+      return err;
     }
   }
 }
