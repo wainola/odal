@@ -33,7 +33,6 @@ class Reader extends Base {
   }
 
   async runDownMigrations(downMigrations) {
-    console.log('runDownMigrations');
     return Migrate.runDownMigrations(this.database, downMigrations);
   }
 
