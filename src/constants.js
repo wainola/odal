@@ -30,6 +30,7 @@ createAt timestamp not null default now(),
 migratedAt timestamp default null
 )
 `;
+
 module.exports = {
   odalIndexPath,
   fileDirectory,

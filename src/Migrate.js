@@ -1,3 +1,4 @@
+const moment = require('moment');
 const Utils = require('./utils');
 
 class Migrate {
@@ -7,6 +8,11 @@ class Migrate {
       try {
         const query = await database.queryToExec(upMigration);
         if (query.success) {
+          await database.queryToExec(`
+          UPDATE registry SET migratedat='${moment().format(
+            'YYYY-MM-DD HH:mm:ss'
+          )}' WHERE migration_name='${filename}';
+          `);
           return accumulator.then(arr => {
             return [...arr, { error: query.success, meta: filename }];
           });
