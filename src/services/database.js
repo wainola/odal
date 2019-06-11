@@ -71,6 +71,21 @@ class Database {
       return { error: true, meta: e };
     }
   }
+
+  async getSchemas() {
+    try {
+      const q = await this.conn.query(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
+      );
+      const r = await q.rows;
+      if (r.length === 0) {
+        return { success: true };
+      }
+      return r;
+    } catch (e) {
+      return { error: true, meta: e };
+    }
+  }
 }
 
 module.exports = new Database(databaseUrl);

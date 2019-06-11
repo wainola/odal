@@ -1,4 +1,5 @@
 require('dotenv').config();
+const moment = require('moment');
 const Base = require('./Base');
 const Migrate = require('./Migrate');
 const Database = require('./services/database');
@@ -7,6 +8,27 @@ const ErrorsDictionary = require('./Errors');
 const Utils = require('./utils');
 
 class Reader extends Base {
+  async getStatus() {
+    return this.getRegistryTableInfo()
+      .then(data => {
+        console.log('MIGRATION STATUS');
+        console.log();
+        console.log(`#\tMigration Name\t\t\tCreated at\t\tMigrated at`);
+        data.forEach((item, idx) => {
+          console.log(
+            `${idx + 1}\t${item.migration_name}\t\t${moment(item.createat).format(
+              'DD/MM/YYYY HH:mm:ss'
+            )}\t${
+              item.migratedat !== null
+                ? moment(item.migratedat).format('DD/MM/YYYY HH:mm:ss')
+                : 'Not migrated'
+            }`
+          );
+        });
+      })
+      .catch(err => Logger.printError(err));
+  }
+
   getRegistryPath() {
     return this.registryPath;
   }

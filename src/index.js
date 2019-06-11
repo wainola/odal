@@ -18,10 +18,7 @@ program.command('init').action(Odal.init);
 program.command('postgres').action(Odal.postgres);
 
 // GET STATUS OF MIGRATIONS
-program.command('status').action(() => {
-  console.log('cwd', process.cwd());
-  console.log('process.env', process.env);
-});
+program.command('status').action(Odal.status);
 
 // CREATE MIGRATIONS
 program.command('create <tableName> [fields...]').action(Odal.create);

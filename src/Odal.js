@@ -35,6 +35,10 @@ class Odal {
       .catch(err => Logger.printError(err));
   }
 
+  static async status() {
+    return Reader.getStatus();
+  }
+
   static async create(tableName, fields) {
     const mappedFields = await Utils.mapFields(fields);
 
