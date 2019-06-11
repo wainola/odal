@@ -111,6 +111,18 @@ class Base {
       return err;
     }
   }
+
+  async getRegistryTableInfo() {
+    await this.database.connect();
+    try {
+      const q = await this.database.queryToExec(
+        'SELECT migration_name, createat, migratedat FROM registry;'
+      );
+      return q;
+    } catch (err) {
+      return err;
+    }
+  }
 }
 
 module.exports = Base;

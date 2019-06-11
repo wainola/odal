@@ -73,7 +73,6 @@ class Database {
   }
 
   async getSchemas() {
-    console.log('getSchemas');
     try {
       const q = await this.conn.query(
         "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
