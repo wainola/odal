@@ -2,7 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
 const moment = require('moment');
-const { pgcryptoQuery, registryTableQuery } = require('./constants');
+const { pgcryptoQuery, registryTableQuery } = require('../constants');
 
 const { NODE_ENV } = process.env;
 
@@ -17,7 +17,6 @@ class Base {
     this.exists = promisify(fs.exists);
     this.writeFile = promisify(fs.writeFile);
     this.mkdir = promisify(fs.mkdir);
-    this.database = database;
   }
 
   // CHECK IF REGISTRY DIRECTORY EXISTS => RETURN BOOLEAN
@@ -89,7 +88,6 @@ class Base {
   }
 
   async createRegistryTableOnInit() {
-    await this.database.connect();
     try {
       const q = await this.database.queryToExec(registryTableQuery);
       return { success: q.success };

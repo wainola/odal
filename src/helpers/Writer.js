@@ -1,6 +1,5 @@
 require('dotenv').config();
 const Base = require('./Base');
-const Database = require('./services/database');
 
 class Writer extends Base {
   async createPGCryptoExtension() {
@@ -57,4 +56,4 @@ class Writer extends Base {
   }
 }
 
-module.exports = new Writer(Database);
+module.exports = new Writer();

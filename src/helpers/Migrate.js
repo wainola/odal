@@ -1,5 +1,5 @@
 const moment = require('moment');
-const Utils = require('./utils');
+const Utils = require('../utils');
 
 class Migrate {
   static async runMigrations(database, migrations) {

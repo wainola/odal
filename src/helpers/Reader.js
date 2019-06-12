@@ -2,10 +2,9 @@ require('dotenv').config();
 const moment = require('moment');
 const Base = require('./Base');
 const Migrate = require('./Migrate');
-const Database = require('./services/database');
 const Logger = require('./Logger');
-const ErrorsDictionary = require('./Errors');
-const Utils = require('./utils');
+const ErrorsDictionary = require('../Errors');
+const Utils = require('../utils');
 
 class Reader extends Base {
   async getStatus() {
@@ -163,4 +162,4 @@ class Reader extends Base {
   }
 }
 
-module.exports = new Reader(Database);
+module.exports = new Reader();

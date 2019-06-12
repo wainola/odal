@@ -1,21 +1,29 @@
 const moment = require('moment');
 const fs = require('fs');
 const { promisify } = require('util');
-const Writer = require('./Writer');
-const Reader = require('./Reader');
+const Writer = require('./helpers/Writer');
+const Reader = require('./helpers/Reader');
 const Utils = require('./utils');
-const Logger = require('./Logger');
+const Logger = require('./helpers/Logger');
 
 const mkdir = promisify(fs.mkdir);
 const writeFile = promisify(fs.writeFile);
 
 class Odal {
+  constructor(databaseUrl) {
+    this.database = databaseUrl;
+  }
+
+  static test() {
+    console.log('this.database');
+  }
+
   static async init() {
     Logger.printInfo('Setup everything for your migrations')
       .then(() => Logger.printInfo('Creating migrations directory'))
       .then(() => mkdir(`${process.cwd()}/migrations`))
       .then(() => Logger.printSetupConfigFile('Creating config file'))
-      .then(() => writeFile(`${process.cwd()}/migrations/config.yml`, '', { flag: 'wx' }))
+      .then(() => writeFile(`${process.cwd()}/migrations/config.js`, '', { flag: 'wx' }))
       .then(() => Logger.printRegistryFolder('Generating registry folder'))
       .then(() => mkdir(`${process.cwd()}/migrations/registry`))
       .then(() => Logger.printInfo('Creating odal_index file'))
@@ -28,7 +36,7 @@ class Odal {
     return Logger.printInfo('Setup for postgres DB')
       .then(() => Logger.printInfo('Creating pgCrypto extension'))
       .then(() => Writer.createPGCryptoExtension())
-      .then(() => Logger.printInfo('Creatin registry table'))
+      .then(() => Logger.printInfo('Creating registry table'))
       .then(() => Writer.createRegistryTable())
       .then(() => Logger.printInfo('You are ready to go with Postgres'))
       .then(() => process.exit())
