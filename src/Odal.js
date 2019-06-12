@@ -28,7 +28,7 @@ class Odal {
     return Logger.printInfo('Setup for postgres DB')
       .then(() => Logger.printInfo('Creating pgCrypto extension'))
       .then(() => Writer.createPGCryptoExtension())
-      .then(() => Logger.printInfo('Creatin registry table'))
+      .then(() => Logger.printInfo('Creating registry table'))
       .then(() => Writer.createRegistryTable())
       .then(() => Logger.printInfo('You are ready to go with Postgres'))
       .then(() => process.exit())
