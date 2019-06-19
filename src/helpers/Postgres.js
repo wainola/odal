@@ -3,14 +3,9 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const { promisify } = require('util');
 
-const readFile = promisify(fs.readFile);
+const configPath = `${process.cwd()}/migrations/config.js`;
 
-const setupConfigFile = async () => {
-  if (fs.exists(`${process.cwd()}/migrations/config.js`)) {
-    const configFile = await readFile(`${process.cwd()}/migrations/config.js`, 'utf8');
-    return configFile;
-  }
-};
+const { databaseUrl } = require(configPath);
 
 class Database {
   constructor(connectionString) {
@@ -82,4 +77,4 @@ class Database {
   }
 }
 
-module.exports = new Database(configFile.databaseUrl);
+module.exports = new Database(databaseUrl);

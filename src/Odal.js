@@ -47,60 +47,20 @@ class Odal {
     return Reader.getStatus();
   }
 
-  static async create(tableName, fields) {
-    const mappedFields = await Utils.mapFields(fields);
-
-    const query = await Utils.buildQuery(mappedFields);
-
+  static async create(tableName) {
     const date = moment().unix();
 
     const filename = `${date}_${tableName}`;
 
-    const sqlQuery = await Utils.buildTableQuery(tableName, query);
-
-    return Writer.writeMigrationFile(tableName, filename, sqlQuery)
+    return Writer.writeMigrationFile(tableName, filename)
       .then(migration => Logger.printInfo(migration.meta))
       .then(() => process.exit())
       .catch(err => Logger.printError('Error on creating the migration file', err.meta));
   }
 
-  static async createClean(migrationName) {
-    const date = moment().unix();
-
-    const filename = `${date}_${migrationName}`;
-
-    const template = await Utils.cleanTemplate();
-
-    return Writer.writeClean(filename, migrationName, template)
-      .then(data => Logger.printInfo(data.meta))
-      .then(() => process.exit(1))
-      .catch(err => Logger.printError(err.meta));
-  }
-
   static async migrate() {
     return Reader.migrate();
   }
-
-  static async migrateLast() {
-    return Reader.migrateLast()
-      .then(message => console.log(message))
-      .then(() => process.exit(1))
-      .catch(err => console.log(err));
-  }
-
-  static async remove() {
-    return Reader.remove()
-      .then(response => Logger.printInfo(response.meta))
-      .catch(err => Logger.printError(err.meta));
-  }
-
-  static async removeLast() {}
-
-  static async getInfo() {}
-
-  static async version() {}
-
-  static async help() {}
 }
 
 module.exports = Odal;

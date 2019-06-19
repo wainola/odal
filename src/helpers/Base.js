@@ -17,6 +17,7 @@ class Base {
     this.exists = promisify(fs.exists);
     this.writeFile = promisify(fs.writeFile);
     this.mkdir = promisify(fs.mkdir);
+    this.readDir = promisify(fs.readdir);
   }
 
   // CHECK IF REGISTRY DIRECTORY EXISTS => RETURN BOOLEAN

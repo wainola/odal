@@ -1,10 +1,8 @@
 require('dotenv').config();
 const moment = require('moment');
 const Base = require('./Base');
-const Migrate = require('./Migrate');
 const Logger = require('./Logger');
-const ErrorsDictionary = require('../Errors');
-const Utils = require('../utils');
+const Postgres = require('./Postgres');
 
 class Reader extends Base {
   async getStatus() {
@@ -32,130 +30,52 @@ class Reader extends Base {
     return this.registryPath;
   }
 
-  async processMigrationFiles(filenames) {
-    return filenames.reduce(async (resolved, filename) => {
-      try {
-        const migrationFile = `${this.registryPath}/${filename}.sql`;
-        const fileRead = await this.readFile(migrationFile, 'utf8');
-        const fileProcessed = fileRead.replace(/\n/, '');
-
-        return resolved.then(arrayResolved => [
-          ...arrayResolved,
-          { migration: fileProcessed, filename }
-        ]);
-      } catch (err) {
-        return [{ error: true, meta: err }];
-      }
-    }, Promise.resolve([]));
-  }
-
-  async runMigrations(migrations) {
-    return Migrate.runMigrations(this.database, migrations);
-  }
-
-  async runDownMigrations(downMigrations) {
-    return Migrate.runDownMigrations(this.database, downMigrations);
-  }
-
-  async getLastMigration(migrationData) {
-    return migrationData.pop();
-  }
-
-  async checkIfFileEmpty(lastMigration) {
-    return this.readMigrationFile(lastMigration.filename)
-      .then(async dataReaded => {
-        const content = await dataReaded.data;
-
-        if (content !== '') {
-          const upMigration = await Migrate.getUpMigration([
-            { migration: content, filename: dataReaded.meta }
-          ]);
-          return this.runSingleMigration(upMigration);
+  // eslint-disable-next-line class-methods-use-this
+  async runUpMigration(up) {
+    return Postgres.connect().then(async connected => {
+      if (!connected.error) {
+        try {
+          const query = await Postgres.queryToExec(up);
+          return query;
+        } catch (err) {
+          return err;
         }
-
-        return dataReaded;
-      })
-      .catch(err => err);
+      }
+    });
   }
 
-  async readMigrationFile(filename) {
+  async runSingleMigration(migrationFile) {
     try {
-      const readFile = this.readFile(`${this.registryPath}/${filename}.sql`, 'utf8');
-      return { data: readFile, meta: filename };
+      const pathToFile = `${this.registryPath}/${migrationFile}`;
+
+      const { up } = require(pathToFile);
+      return this.runUpMigration(up);
     } catch (err) {
-      return { error: true, meta: err.meta };
+      return err;
     }
   }
 
-  async runSingleMigration([{ upMigration, filename }]) {
-    return Migrate.runSingleMigration({ database: this.database, upMigration, filename });
-  }
-
   async migrate() {
-    return this.readOdalIndexFile(this.registryPath)
-      .then(dataWroted => {
-        const filenames = dataWroted.split('\n');
-        const filteredFilenames = filenames.filter(e => e !== '');
-        return filteredFilenames;
-      })
-      .then(filenamesProcessed => this.processMigrationFiles(filenamesProcessed))
-      .then(resultedFilenames => Migrate.getUpMigration(resultedFilenames))
-      .then(migrationProcessed => this.runMigrations(migrationProcessed))
-      .then(resultOfMigration =>
-        resultOfMigration.forEach(dataMigrated =>
-          Logger.printSuccess(`Succesfully applied migration for ${dataMigrated.meta}.sql`)
-        )
-      )
-      .then(() => process.exit())
-      .catch(err => Logger.printError(err));
-  }
+    return this.readDir(`${this.registryPath}`)
+      .then(contents => {
+        if (contents.length) {
+          const migrationsRun = contents.reduce(async (acc, item) => {
+            try {
+              const m = await this.runSingleMigration(item);
+              acc = { file: item, migrated: m };
+            } catch (err) {
+              acc.push(err);
+            }
 
-  async migrateLast() {
-    return this.checkIndexFileExists(this.registryPath)
-      .then(async indexFileChecked => {
-        if (!indexFileChecked.error) {
-          try {
-            return this.readOdalIndexFile(this.registryPath);
-          } catch (err) {
-            return ErrorsDictionary['no-migrations'];
-          }
+            return acc;
+          }, {});
+          return migrationsRun;
         }
       })
-      .then(odalIndexFileContent => odalIndexFileContent.meta)
-      .then(dataWroted => dataWroted.split('\n'))
-      .then(filenames => filenames.filter(e => e !== ''))
-      .then(filenamesProccessed => this.processMigrationFiles(filenamesProccessed))
-      .then(migrationData => this.getLastMigration(migrationData))
-      .then(lastMigration => this.checkIfFileEmpty(lastMigration))
-      .then(fileReaded => {
-        // I THINK THAT THIS IF IS USELESS
-        if (fileReaded.success) {
-          return `Success on running the migration file for ${fileReaded.filename}`;
+      .then(migrationResult => {
+        if (migrationResult.migrated) {
+          return Logger.printSuccess(`Migration success for ${migrationResult.file}`);
         }
-      })
-      .catch(err => err);
-  }
-
-  async remove() {
-    return this.checkIndexFileExists()
-      .then(async indexFileChecked => {
-        if (!indexFileChecked.error) {
-          try {
-            return this.readOdalIndexFile();
-          } catch (err) {
-            return ErrorsDictionary['no-migrations'];
-          }
-        }
-      })
-      .then(odalIndexFileContent => odalIndexFileContent)
-      .then(indexFileContent => Utils.filterFileNames(indexFileContent))
-      .then(filteredFilenames => this.processMigrationFiles(filteredFilenames))
-      .then(migrationData => Migrate.getDownMigration(migrationData))
-      .then(downMigrations => this.runDownMigrations(downMigrations))
-      .then(resultOfMigrations => {
-        resultOfMigrations.forEach(dataMigrated => {
-          Logger.printSuccess(`Success on applying down migration on ${dataMigrated.meta}.sql`);
-        });
       })
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
