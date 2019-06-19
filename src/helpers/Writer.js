@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Base = require('./Base');
+const migrationTemplate = require('./migrationTemplate');
 
 class Writer extends Base {
   async createPGCryptoExtension() {
@@ -10,23 +11,9 @@ class Writer extends Base {
     return this.createRegistryTableOnInit();
   }
 
-  // WRITE ON THE INDE FILE
-  async writeIndexFile(dataToWrite) {
+  async writeData(filename, tablename) {
     try {
-      const dataWroted = await this.readFile(`${this.registryPath}/odal_index`, 'utf8');
-      const dToW = `${dataWroted}\n${dataToWrite}`;
-
-      await this.writeFile(`${this.registryPath}/odal_index`, dToW);
-
-      return { error: false, meta: `${dataToWrite}.sql wroted successfully` };
-    } catch (err) {
-      return { error: true, meta: err };
-    }
-  }
-
-  async writeData(dataToWrite, filename, tablename) {
-    try {
-      this.writeFile(`${this.registryPath}/${filename}.sql`, dataToWrite);
+      await this.writeFile(`${this.registryPath}/${filename}.js`, migrationTemplate);
 
       return {
         error: false,
@@ -41,18 +28,9 @@ class Writer extends Base {
     }
   }
 
-  async writeClean(filename, migrationName, template) {
-    return this.writeData(template, filename, migrationName)
-      .then(migrationFileWrote => this.writeIndexFile(migrationFileWrote.dataToWrite))
-      .catch(err => err);
-  }
-
   // WRITE FILE
-  async writeMigrationFile(tablename, filename, dataToWrite) {
-    return this.writeData(dataToWrite, filename, tablename)
-      .then(migrationMetaData => this.updateRegistryTable(migrationMetaData))
-      .then(migrationFileWrote => this.writeIndexFile(migrationFileWrote.dataToWrite))
-      .catch(err => err);
+  async writeMigrationFile(tablename, filename) {
+    return this.writeData(filename, tablename).catch(err => err);
   }
 }
 
