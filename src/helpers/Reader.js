@@ -61,6 +61,7 @@ class Reader extends Base {
         const migrationResult = [];
         for (const content of contents) {
           const migrated = await this.runSingleMigration(content);
+          const updateRegistryTable = await this.updateRegistryTable(content);
           migrationResult.push({ response: migrated, file: content });
         }
         return migrationResult;

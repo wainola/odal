@@ -107,18 +107,17 @@ class Base {
       .catch(err => err);
   }
 
-  async updateRegistryTable(migrationMetaData) {
-    await this.database.connect();
-    try {
-      const q = await this.database.queryToExec(`
-        INSERT INTO registry (migration_name) VALUES ('${
-          migrationMetaData.dataToWrite
-        }') RETURNING *;
-      `);
-      return migrationMetaData;
-    } catch (err) {
-      return err;
-    }
+  // eslint-disable-next-line class-methods-use-this
+  async updateRegistryTable(content) {
+    return Postgres.connect().then(async () => {
+      try {
+        const query = `INSERT INTO registry (migratedat) VALUES ('${moment().toISOString()}') WHERE migration_name='${content}';`;
+        const qToExec = await Postgres.queryToExec(query);
+        return qToExec;
+      } catch (err) {
+        return err;
+      }
+    });
   }
 
   async getRegistryTableInfo() {
