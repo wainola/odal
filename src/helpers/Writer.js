@@ -1,4 +1,5 @@
 require('dotenv').config();
+const moment = require('moment');
 const Base = require('./Base');
 const Postgres = require('./Postgres');
 const migrationTemplate = require('./migrationTemplate');
@@ -35,7 +36,9 @@ class Writer extends Base {
       .then(async data => {
         try {
           const q = await Postgres.queryToExec(
-            `INSERT INTO REGISTRY(migration_name) VALUES('${data.dataToWrite}.js')`
+            `INSERT INTO REGISTRY(migration_name, createdat) VALUES('${
+              data.dataToWrite
+            }.js', '${moment().format()}')`
           );
           return { success: q.success, ...data };
         } catch (err) {
