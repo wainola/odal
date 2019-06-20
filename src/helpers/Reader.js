@@ -57,26 +57,23 @@ class Reader extends Base {
 
   async migrate() {
     return this.readDir(`${this.registryPath}`)
-      .then(contents => {
-        if (contents.length) {
-          const migrationsRun = contents.reduce(async (acc, item) => {
-            try {
-              const m = await this.runSingleMigration(item);
-              acc = { file: item, migrated: m };
-            } catch (err) {
-              acc.push(err);
-            }
-
-            return acc;
-          }, {});
-          return migrationsRun;
+      .then(async contents => {
+        const migrationResult = [];
+        for (const content of contents) {
+          const migrated = await this.runSingleMigration(content);
+          migrationResult.push({ response: migrated, file: content });
         }
+        return migrationResult;
       })
-      .then(migrationResult => {
-        if (migrationResult.migrated) {
-          return Logger.printSuccess(`Migration success for ${migrationResult.file}`);
-        }
-      })
+      .then(migrationResult =>
+        migrationResult.forEach(item => {
+          if (item.response.error) {
+            Logger.printError(`Error on migration the file ${item.file}: ${item.response.meta}`);
+          } else {
+            Logger.printInfo(`Success on migrating the file ${item.file}`);
+          }
+        })
+      )
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
   }
