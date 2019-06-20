@@ -13,7 +13,7 @@ class Reader extends Base {
         console.log(`#\tMigration Name\t\t\tCreated at\t\tMigrated at`);
         data.forEach((item, idx) => {
           console.log(
-            `${idx + 1}\t${item.migration_name}\t\t${moment(item.createat).format(
+            `${idx + 1}\t${item.migration_name}\t\t${moment(item.createdat).format(
               'DD/MM/YYYY HH:mm:ss'
             )}\t${
               item.migratedat !== null
@@ -22,7 +22,10 @@ class Reader extends Base {
             }`
           );
         });
+
+        console.log('\n');
       })
+      .then(() => process.exit())
       .catch(err => Logger.printError(err));
   }
 
@@ -56,13 +59,22 @@ class Reader extends Base {
   }
 
   async migrate() {
-    return this.readDir(`${this.registryPath}`)
-      .then(async contents => {
+    return this.getRegistryTableInfo()
+      .then(async data => {
         const migrationResult = [];
-        for (const content of contents) {
-          const migrated = await this.runSingleMigration(content);
-          const updateRegistryTable = await this.updateRegistryTable(content);
-          migrationResult.push({ response: migrated, file: content });
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of data) {
+          if (!item.migratedat) {
+            const migrated = await this.runSingleMigration(item.migration_name);
+
+            const updateRegistryTable = await this.updateRegistryTable(item.migration_name);
+
+            migrationResult.push({
+              response: migrated,
+              file: item.migration_name,
+              update: updateRegistryTable
+            });
+          }
         }
         return migrationResult;
       })
