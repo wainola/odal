@@ -9,7 +9,7 @@ let databaseUrl;
 const existsConfig = fs.existsSync(`${process.cwd()}/migrations`);
 
 if (existsConfig) {
-  console.log('here');
+  // eslint-disable-next-line prefer-destructuring
   databaseUrl = require(configPath).databaseUrl;
 }
 
@@ -19,7 +19,6 @@ if (!databaseUrl) {
 
 class Database {
   constructor(connectionString) {
-    console.log(connectionString);
     if (Database.exists) {
       return Database;
     }

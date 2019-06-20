@@ -90,7 +90,6 @@ class Base {
           return err;
         }
       })
-      .then(() => Postgres.closeConnection())
       .catch(err => err);
   }
 
@@ -105,7 +104,6 @@ class Base {
           return err;
         }
       })
-      .then(() => Postgres.closeConnection())
       .catch(err => err);
   }
 

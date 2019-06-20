@@ -35,7 +35,7 @@ class Writer extends Base {
       .then(async data => {
         try {
           const q = await Postgres.queryToExec(
-            `INSERT INTO REGISTRY(TABLE_NAME) VALUES('${data.dataToWrite}')`
+            `INSERT INTO REGISTRY(migration_name) VALUES('${data.dataToWrite}')`
           );
           return { success: q.success, ...data };
         } catch (err) {
