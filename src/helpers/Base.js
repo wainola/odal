@@ -111,7 +111,7 @@ class Base {
   async updateRegistryTable(content) {
     return Postgres.connect().then(async () => {
       try {
-        const query = `INSERT INTO registry (migratedat) VALUES ('${moment().toISOString()}') WHERE migration_name='${content}';`;
+        const query = `UPDATE registry set migratedat='${moment().format()}' WHERE migration_name='${content}';`;
         const qToExec = await Postgres.queryToExec(query);
         return qToExec;
       } catch (err) {
