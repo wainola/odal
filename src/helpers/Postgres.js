@@ -5,10 +5,21 @@ const { promisify } = require('util');
 
 const configPath = `${process.cwd()}/migrations/config.js`;
 
-const { databaseUrl } = require(configPath);
+let databaseUrl;
+const existsConfig = fs.existsSync(`${process.cwd()}/migrations`);
+
+if (existsConfig) {
+  console.log('here');
+  databaseUrl = require(configPath).databaseUrl;
+}
+
+if (!databaseUrl) {
+  databaseUrl = '';
+}
 
 class Database {
   constructor(connectionString) {
+    console.log(connectionString);
     if (Database.exists) {
       return Database;
     }

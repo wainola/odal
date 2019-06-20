@@ -2,12 +2,13 @@ require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
 const moment = require('moment');
+const Postgres = require('./Postgres');
 const { pgcryptoQuery, registryTableQuery } = require('../constants');
 
 const { NODE_ENV } = process.env;
 
 class Base {
-  constructor(database) {
+  constructor() {
     this.registryPath =
       NODE_ENV !== 'test'
         ? `${process.cwd()}/migrations/registry`
@@ -78,23 +79,34 @@ class Base {
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
   async createPGCryptoExtensionOnInit() {
-    await this.database.connect();
-    try {
-      const q = await this.database.queryToExec(pgcryptoQuery);
-      return { success: q.success };
-    } catch (err) {
-      return { error: err.error, meta: err.meta };
-    }
+    return Postgres.connect()
+      .then(async () => {
+        try {
+          const q = await Postgres.queryToExec(pgcryptoQuery);
+          return q;
+        } catch (err) {
+          return err;
+        }
+      })
+      .then(() => Postgres.closeConnection())
+      .catch(err => err);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   async createRegistryTableOnInit() {
-    try {
-      const q = await this.database.queryToExec(registryTableQuery);
-      return { success: q.success };
-    } catch (err) {
-      return { error: err.error, meta: err.meta };
-    }
+    return Postgres.connect()
+      .then(async () => {
+        try {
+          const q = await Postgres.queryToExec(registryTableQuery);
+          return q;
+        } catch (err) {
+          return err;
+        }
+      })
+      .then(() => Postgres.closeConnection())
+      .catch(err => err);
   }
 
   async updateRegistryTable(migrationMetaData) {

@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Base = require('./Base');
+const Postgres = require('./Postgres');
 const migrationTemplate = require('./migrationTemplate');
 
 class Writer extends Base {
@@ -30,7 +31,18 @@ class Writer extends Base {
 
   // WRITE FILE
   async writeMigrationFile(tablename, filename) {
-    return this.writeData(filename, tablename).catch(err => err);
+    return this.writeData(filename, tablename)
+      .then(async data => {
+        try {
+          const q = await Postgres.queryToExec(
+            `INSERT INTO REGISTRY(TABLE_NAME) VALUES('${data.dataToWrite}')`
+          );
+          return { success: q.success, ...data };
+        } catch (err) {
+          return err;
+        }
+      })
+      .catch(err => err);
   }
 }
 
