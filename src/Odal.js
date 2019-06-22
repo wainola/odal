@@ -59,6 +59,10 @@ class Odal {
   static async migrate() {
     return Reader.migrate();
   }
+
+  static async undo() {
+    return Reader.undo();
+  }
 }
 
 module.exports = Odal;

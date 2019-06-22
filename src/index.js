@@ -22,11 +22,8 @@ program.command('create:clean <migrationName>').action(Odal.createClean);
 // RUN ALL MIGRATION
 program.command('migrate').action(Odal.migrate);
 
-// RUN THE LATEST MIGRATION
-program.command('migrate:last').action(Odal.migrateLast);
-
 // REMOVE ALL MIGRATIONS
-program.command('remove:all').action(Odal.remove);
+program.command('undo:all').action(Odal.undo);
 
 // REMOVE LAST MIGRATION
 program.command('remove:last').action(Odal.removeLast);

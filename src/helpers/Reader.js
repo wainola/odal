@@ -34,11 +34,11 @@ class Reader extends Base {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async runUpMigration(up) {
+  async executeQueryMigration(migration) {
     return Postgres.connect().then(async connected => {
       if (!connected.error) {
         try {
-          const query = await Postgres.queryToExec(up);
+          const query = await Postgres.queryToExec(migration);
           return query;
         } catch (err) {
           return err;
@@ -47,12 +47,27 @@ class Reader extends Base {
     });
   }
 
-  async runSingleMigration(migrationFile) {
+  // eslint-disable-next-line class-methods-use-this
+  async runUpMigration(up) {
+    return this.executeQueryMigration(up);
+  }
+
+  async runDownMigration(down) {
+    return this.executeQueryMigration(down);
+  }
+
+  async runSingleMigration(migrationFile, type) {
     try {
       const pathToFile = `${this.registryPath}/${migrationFile}`;
+      const { up, down } = require(pathToFile);
 
-      const { up } = require(pathToFile);
-      return this.runUpMigration(up);
+      if (type === 'up') {
+        return this.runUpMigration(up);
+      }
+
+      if (type === 'down') {
+        return this.runDownMigration(down);
+      }
     } catch (err) {
       return err;
     }
@@ -65,7 +80,7 @@ class Reader extends Base {
         // eslint-disable-next-line no-restricted-syntax
         for (const item of data) {
           if (!item.migratedat) {
-            const migrated = await this.runSingleMigration(item.migration_name);
+            const migrated = await this.runSingleMigration(item.migration_name, 'up');
 
             const updateRegistryTable = await this.updateRegistryTable(item.migration_name);
 
@@ -87,6 +102,34 @@ class Reader extends Base {
           }
         })
       )
+      .then(() => process.exit())
+      .catch(err => Logger.printError(err));
+  }
+
+  async undo() {
+    return this.getRegistryTableInfo()
+      .then(async data => {
+        const migratedTables = data
+          .filter(item => item.migratedat)
+          .map(elem => elem.migration_name)
+          .reverse();
+        return migratedTables;
+      })
+      .then(async migratedTables => {
+        const migrationResult = [];
+        for (const migration of migratedTables) {
+          const migrated = await this.runSingleMigration(migration, 'down');
+          migrationResult.push(migrated);
+        }
+        const success = migrationResult.every(item => item.success);
+        return success;
+      })
+      .then(success => {
+        if (success) {
+          return this.updateRegistry();
+        }
+      })
+      .then(() => Logger.printInfo('Success on removing all the tables!'))
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
   }

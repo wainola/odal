@@ -74,6 +74,19 @@ class Base {
       }
     });
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  async updateRegistry() {
+    return Postgres.connect().then(async () => {
+      try {
+        const query = 'UPDATE REGISTRY SET migratedat=null;';
+        const q = await Postgres.queryToExec(query);
+        return q;
+      } catch (err) {
+        return err;
+      }
+    });
+  }
 }
 
 module.exports = Base;
