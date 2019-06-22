@@ -28,4 +28,10 @@ program.command('undo:all').action(Odal.undo);
 // REMOVE LAST MIGRATION
 program.command('remove:last').action(Odal.removeLast);
 
+// REMOVE REGISTRY TABLE
+program.command('remove:registry').action(Odal.removeRegistryTable);
+
+// CREATE REGISTRY TABLE
+program.command('create:registry').action(Odal.createRegistryTable);
+
 program.parse(process.argv);

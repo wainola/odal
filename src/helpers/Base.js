@@ -87,6 +87,51 @@ class Base {
       }
     });
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  async removeRegistryTable() {
+    return Postgres.connect()
+      .then(async () => {
+        try {
+          const query = 'SELECT migratedat FROM REGISTRY';
+          const q = await Postgres.queryToExec(query);
+
+          if (!Array.isArray(q)) {
+            throw new Error('There are not migrations on the table');
+          }
+
+          return q;
+        } catch (err) {
+          return Promise.reject(err);
+        }
+      })
+      .then(async resultOfQuery => {
+        try {
+          const areNotMigrated = resultOfQuery.every(item => item.migratedat === null);
+
+          if (!areNotMigrated) {
+            return new Error(
+              'There are migrations on the database. Undo them all and the run this command'
+            );
+          }
+
+          const dropQuery = 'DROP TABLE registry;';
+          const q2 = await Postgres.queryToExec(dropQuery);
+
+          if (q2.success) {
+            return 'Registry table removed';
+          }
+        } catch (err) {
+          return Promise.reject(err);
+        }
+      })
+      .catch(err => Promise.reject(err));
+
+    // .catch(err => {
+    //   console.log('outside err'.err);
+    //   return err;
+    // })
+  }
 }
 
 module.exports = Base;

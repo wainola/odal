@@ -54,6 +54,23 @@ class Odal {
   static async undo() {
     return Reader.undo();
   }
+
+  static async removeRegistryTable() {
+    return Reader.removeRegistryTable()
+      .then(data => Logger.printSuccess(data))
+      .then(() => process.exit())
+      .catch(err => {
+        Logger.printError(err);
+        return process.exit();
+      });
+  }
+
+  static async createRegistryTable() {
+    return Reader.createRegistryTableOnInit()
+      .then(() => Logger.printSuccess('Success on creating registry table'))
+      .then(() => process.exit)
+      .catch(() => Logger.printError('Error on creating registry table'));
+  }
 }
 
 module.exports = Odal;
