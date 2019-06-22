@@ -26,7 +26,7 @@ const registryTableQuery = `
 CREATE TABLE registry (
 id uuid not null primary key default gen_random_uuid(),
 migration_name text not null,
-createAt timestamp not null default now(),
+createdAt timestamp default null,
 migratedAt timestamp default null
 )
 `;

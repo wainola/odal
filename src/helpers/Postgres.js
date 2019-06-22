@@ -3,14 +3,19 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const { promisify } = require('util');
 
-const readFile = promisify(fs.readFile);
+const configPath = `${process.cwd()}/migrations/config.js`;
 
-const setupConfigFile = async () => {
-  if (fs.exists(`${process.cwd()}/migrations/config.js`)) {
-    const configFile = await readFile(`${process.cwd()}/migrations/config.js`, 'utf8');
-    return configFile;
-  }
-};
+let databaseUrl;
+const existsConfig = fs.existsSync(`${process.cwd()}/migrations`);
+
+if (existsConfig) {
+  // eslint-disable-next-line prefer-destructuring
+  databaseUrl = require(configPath).databaseUrl;
+}
+
+if (!databaseUrl) {
+  databaseUrl = '';
+}
 
 class Database {
   constructor(connectionString) {
@@ -82,4 +87,4 @@ class Database {
   }
 }
 
-module.exports = new Database(configFile.databaseUrl);
+module.exports = new Database(databaseUrl);
