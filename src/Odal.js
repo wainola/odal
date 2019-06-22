@@ -3,21 +3,12 @@ const fs = require('fs');
 const { promisify } = require('util');
 const Writer = require('./helpers/Writer');
 const Reader = require('./helpers/Reader');
-const Utils = require('./utils');
 const Logger = require('./helpers/Logger');
 
 const mkdir = promisify(fs.mkdir);
 const writeFile = promisify(fs.writeFile);
 
 class Odal {
-  constructor(databaseUrl) {
-    this.database = databaseUrl;
-  }
-
-  static test() {
-    console.log('this.database');
-  }
-
   static async init() {
     Logger.printInfo('Setup everything for your migrations')
       .then(() => Logger.printInfo('Creating migrations directory'))
