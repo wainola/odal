@@ -97,7 +97,9 @@ class Base {
           const q = await Postgres.queryToExec(query);
 
           if (!Array.isArray(q)) {
-            throw new Error('There are not migrations on the table');
+            const dropQueryOnError = 'DROP TABLE registry;';
+            await Postgres.queryToExec(dropQueryOnError);
+            throw new Error('There are not migrations on the table. Removing empty table');
           }
 
           return q;
@@ -126,11 +128,6 @@ class Base {
         }
       })
       .catch(err => Promise.reject(err));
-
-    // .catch(err => {
-    //   console.log('outside err'.err);
-    //   return err;
-    // })
   }
 }
 

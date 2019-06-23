@@ -34,4 +34,7 @@ program.command('remove:registry').action(Odal.removeRegistryTable);
 // CREATE REGISTRY TABLE
 program.command('create:registry').action(Odal.createRegistryTable);
 
+// RE-RUN MIGRATIONS AND UPDATE REGISTRY TABLE
+program.command('registry:update').action(Odal.registryUpdate);
+
 program.parse(process.argv);

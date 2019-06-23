@@ -68,8 +68,12 @@ class Odal {
   static async createRegistryTable() {
     return Reader.createRegistryTableOnInit()
       .then(() => Logger.printSuccess('Success on creating registry table'))
-      .then(() => process.exit)
+      .then(() => process.exit())
       .catch(() => Logger.printError('Error on creating registry table'));
+  }
+
+  static async registryUpdate() {
+    return Reader.registryUpdate();
   }
 }
 

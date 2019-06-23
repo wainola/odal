@@ -133,6 +133,26 @@ class Reader extends Base {
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
   }
+
+  async registryUpdate() {
+    return Postgres.connect()
+      .then(() => this.readDir(this.registryPath))
+      .then(async contents => {
+        if (Array.isArray(contents)) {
+          for (const content of contents) {
+            try {
+              const query = `INSERT INTO registry (migration_name, createdat) VALUES ('${content}', NOW());`;
+              const q = await Postgres.queryToExec(query);
+              return q;
+            } catch (err) {
+              return err;
+            }
+          }
+        }
+      })
+      .then(queryResult => console.log(queryResult))
+      .catch(err => Logger.printError(err));
+  }
 }
 
 module.exports = new Reader();
