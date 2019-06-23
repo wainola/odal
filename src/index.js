@@ -37,4 +37,7 @@ program.command('create:registry').action(Odal.createRegistryTable);
 // RE-RUN MIGRATIONS AND UPDATE REGISTRY TABLE
 program.command('registry:update').action(Odal.registryUpdate);
 
+// CREATE PGEXTENSION IF NEEDED
+program.command('postgres:pgcrypto').action(Odal.createPgCrypto);
+
 program.parse(process.argv);

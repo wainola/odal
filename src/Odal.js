@@ -75,6 +75,13 @@ class Odal {
   static async registryUpdate() {
     return Reader.registryUpdate();
   }
+
+  static async createPgCrypto() {
+    return Reader.createPGCryptoExtensionOnInit()
+      .then(() => Logger.printSuccess('Success on creating pgcrypto extension'))
+      .then(() => process.exit())
+      .catch(err => Logger.printError('Error on creating pgcrypto extension'));
+  }
 }
 
 module.exports = Odal;

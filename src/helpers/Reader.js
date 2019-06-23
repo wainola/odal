@@ -138,19 +138,26 @@ class Reader extends Base {
     return Postgres.connect()
       .then(() => this.readDir(this.registryPath))
       .then(async contents => {
+        const registryArray = [];
         if (Array.isArray(contents)) {
           for (const content of contents) {
             try {
-              const query = `INSERT INTO registry (migration_name, createdat) VALUES ('${content}', NOW());`;
+              const query = `INSERT INTO registry (migration_name, createdat) VALUES ('${content}', '${moment().format()}');`;
               const q = await Postgres.queryToExec(query);
-              return q;
+              registryArray.push({ success: q.success, filename: content });
             } catch (err) {
               return err;
             }
           }
         }
+        return registryArray;
       })
-      .then(queryResult => console.log(queryResult))
+      .then(queryResult => {
+        queryResult.forEach(item =>
+          Logger.printSuccess(`${item.filename} succesfully addded to the registry table`)
+        );
+        return process.exit();
+      })
       .catch(err => Logger.printError(err));
   }
 }
