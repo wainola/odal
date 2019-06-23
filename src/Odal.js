@@ -54,6 +54,34 @@ class Odal {
   static async undo() {
     return Reader.undo();
   }
+
+  static async removeRegistryTable() {
+    return Reader.removeRegistryTable()
+      .then(data => Logger.printSuccess(data))
+      .then(() => process.exit())
+      .catch(err => {
+        Logger.printError(err);
+        return process.exit();
+      });
+  }
+
+  static async createRegistryTable() {
+    return Reader.createRegistryTableOnInit()
+      .then(() => Logger.printSuccess('Success on creating registry table'))
+      .then(() => process.exit())
+      .catch(() => Logger.printError('Error on creating registry table'));
+  }
+
+  static async registryUpdate() {
+    return Reader.registryUpdate();
+  }
+
+  static async createPgCrypto() {
+    return Reader.createPGCryptoExtensionOnInit()
+      .then(() => Logger.printSuccess('Success on creating pgcrypto extension'))
+      .then(() => process.exit())
+      .catch(err => Logger.printError('Error on creating pgcrypto extension'));
+  }
 }
 
 module.exports = Odal;

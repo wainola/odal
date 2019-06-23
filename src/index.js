@@ -28,4 +28,16 @@ program.command('undo:all').action(Odal.undo);
 // REMOVE LAST MIGRATION
 program.command('remove:last').action(Odal.removeLast);
 
+// REMOVE REGISTRY TABLE
+program.command('remove:registry').action(Odal.removeRegistryTable);
+
+// CREATE REGISTRY TABLE
+program.command('create:registry').action(Odal.createRegistryTable);
+
+// RE-RUN MIGRATIONS AND UPDATE REGISTRY TABLE
+program.command('registry:update').action(Odal.registryUpdate);
+
+// CREATE PGEXTENSION IF NEEDED
+program.command('postgres:pgcrypto').action(Odal.createPgCrypto);
+
 program.parse(process.argv);
