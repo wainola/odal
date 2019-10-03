@@ -9,6 +9,8 @@
   "author": "Nicolás Riquelme Guzmán",
   "license": "MIT",
   "dependencies": {
+    "base": "^3.0.0",
+    "cache-base": "^4.0.0",
     "commander": "^2.19.0",
     "dotenv": "^6.2.0",
     "moment": "^2.24.0",
