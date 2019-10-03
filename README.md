@@ -10,3 +10,9 @@
 - read some configuration file on `.yml` format (priority).
 - ~~add markup to the `.sql` with `up` and `down`.~~
 - make command init to setup everything
+
+## DEVELOPMENT
+
+In order to start the project you need to setup an instance of postgres to run some test that requires a database connection. Run `npm run d-build` and then `npm run d-up` to get the postgres image up and running. If you want, you can inspect the container by using `npm run d-inspect`.
+
+If you want to check the database that we are using to run some test, you can use the command `npm run d-postgres`. You will be able to see the tables that the program is creating. Also you can use this instance to debug your migrations methods.

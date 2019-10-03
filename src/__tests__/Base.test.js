@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { promisify } = require('util');
-const Base = require('../Base');
+const Base = require('../helpers/Base');
 const Database = require('../services/database');
 
 const mkdir = promisify(fs.mkdir);

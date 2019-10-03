@@ -4,7 +4,11 @@
   "description": "migraton tool that resembles goose",
   "main": "./src/index.js",
   "scripts": {
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "d-build": "docker-compose -f docker-compose.develop.yml build",
+    "d-up": "docker-compose -f docker-compose.develop.yml up -d",
+    "d-inspect": "docker-compose -f docker-compose.develop.yml ps",
+    "d-postgres": "docker exec -it odal_db_1 psql -U postgres -d odal_db"
   },
   "author": "Nicolás Riquelme Guzmán",
   "license": "MIT",
