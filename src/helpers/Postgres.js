@@ -1,21 +1,20 @@
-require('dotenv').config();
 const { Pool } = require('pg');
-const fs = require('fs');
-const { promisify } = require('util');
 
-const configPath = `${process.cwd()}/migrations/config.js`;
+const { NODE_ENV } = process.env;
 
-let databaseUrl;
-const existsConfig = fs.existsSync(`${process.cwd()}/migrations`);
-
-if (existsConfig) {
-  // eslint-disable-next-line prefer-destructuring
-  databaseUrl = require(configPath).databaseUrl;
+switch (NODE_ENV) {
+  case 'test':
+    require('dotenv').config({ path: `${process.cwd()}/.env.test` });
+    break;
+  case 'development':
+    require('dotenv').config({ path: `${process.cwd()}/.env.development` });
+    break;
+  default:
+    require('dotenv').config();
+    break;
 }
 
-if (!databaseUrl) {
-  databaseUrl = '';
-}
+const { DATABASE_URL } = process.env;
 
 class Database {
   constructor(connectionString) {
@@ -87,4 +86,4 @@ class Database {
   }
 }
 
-module.exports = new Database(databaseUrl);
+module.exports = new Database(DATABASE_URL);

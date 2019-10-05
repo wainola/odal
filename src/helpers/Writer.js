@@ -5,6 +5,10 @@ const Postgres = require('./Postgres');
 const migrationTemplate = require('./migrationTemplate');
 
 class Writer extends Base {
+  constructor(databaseInstance) {
+    super(databaseInstance);
+  }
+
   async createPGCryptoExtension() {
     return this.createPGCryptoExtensionOnInit();
   }
@@ -35,7 +39,7 @@ class Writer extends Base {
     return this.writeData(filename, tablename)
       .then(async data => {
         try {
-          const q = await Postgres.queryToExec(
+          const q = await this.databaseInstance.queryToExec(
             `INSERT INTO REGISTRY(migration_name, createdat) VALUES('${
               data.dataToWrite
             }.js', '${moment().format()}')`
@@ -49,4 +53,4 @@ class Writer extends Base {
   }
 }
 
-module.exports = new Writer();
+module.exports = new Writer(Postgres);

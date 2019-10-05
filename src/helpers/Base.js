@@ -2,13 +2,12 @@ require('dotenv').config();
 const fs = require('fs');
 const { promisify } = require('util');
 const moment = require('moment');
-const Postgres = require('./Postgres');
 const { pgcryptoQuery, registryTableQuery } = require('../constants');
 
 const { NODE_ENV } = process.env;
 
 class Base {
-  constructor() {
+  constructor(databaseInstance) {
     this.registryPath =
       NODE_ENV !== 'test'
         ? `${process.cwd()}/migrations/registry`
@@ -19,14 +18,19 @@ class Base {
     this.writeFile = promisify(fs.writeFile);
     this.mkdir = promisify(fs.mkdir);
     this.readDir = promisify(fs.readdir);
+    this.databaseInstance = databaseInstance;
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  async closeConnection() {
+    return this.databaseInstance.closeConnection();
+  }
+
   async createPGCryptoExtensionOnInit() {
-    return Postgres.connect()
+    return this.databaseInstance
+      .connect()
       .then(async () => {
         try {
-          const q = await Postgres.queryToExec(pgcryptoQuery);
+          const q = await this.databaseInstance.queryToExec(pgcryptoQuery);
           return q;
         } catch (err) {
           return err;
@@ -35,12 +39,12 @@ class Base {
       .catch(err => err);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async createRegistryTableOnInit() {
-    return Postgres.connect()
+    return this.databaseInstance
+      .connect()
       .then(async () => {
         try {
-          const q = await Postgres.queryToExec(registryTableQuery);
+          const q = await this.databaseInstance.queryToExec(registryTableQuery);
           return q;
         } catch (err) {
           return err;
@@ -49,12 +53,11 @@ class Base {
       .catch(err => err);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async updateRegistryTable(content) {
-    return Postgres.connect().then(async () => {
+    return this.databaseInstance.connect().then(async () => {
       try {
         const query = `UPDATE registry set migratedat='${moment().format()}' WHERE migration_name='${content}';`;
-        const qToExec = await Postgres.queryToExec(query);
+        const qToExec = await this.databaseInstance.queryToExec(query);
         return qToExec;
       } catch (err) {
         return err;
@@ -62,12 +65,11 @@ class Base {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async getRegistryTableInfo() {
-    return Postgres.connect().then(async () => {
+    return this.databaseInstance.connect().then(async () => {
       try {
         const query = 'SELECT migration_name, createdat, migratedat from REGISTRY;';
-        const q = await Postgres.queryToExec(query);
+        const q = await this.databaseInstance.queryToExec(query);
         return q;
       } catch (err) {
         return err;
@@ -75,12 +77,11 @@ class Base {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async updateRegistry() {
-    return Postgres.connect().then(async () => {
+    return this.databaseInstance.connect().then(async () => {
       try {
         const query = 'UPDATE REGISTRY SET migratedat=null;';
-        const q = await Postgres.queryToExec(query);
+        const q = await this.databaseInstance.queryToExec(query);
         return q;
       } catch (err) {
         return err;
@@ -88,17 +89,17 @@ class Base {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async removeRegistryTable() {
-    return Postgres.connect()
+    return this.databaseInstance
+      .connect()
       .then(async () => {
         try {
           const query = 'SELECT migratedat FROM REGISTRY';
-          const q = await Postgres.queryToExec(query);
+          const q = await this.databaseInstance.queryToExec(query);
 
           if (!Array.isArray(q)) {
             const dropQueryOnError = 'DROP TABLE registry;';
-            await Postgres.queryToExec(dropQueryOnError);
+            await this.databaseInstance.queryToExec(dropQueryOnError);
             throw new Error('There are not migrations on the table. Removing empty table');
           }
 
@@ -118,7 +119,7 @@ class Base {
           }
 
           const dropQuery = 'DROP TABLE registry;';
-          const q2 = await Postgres.queryToExec(dropQuery);
+          const q2 = await this.databaseInstance.queryToExec(dropQuery);
 
           if (q2.success) {
             return 'Registry table removed';
