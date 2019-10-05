@@ -1,16 +1,20 @@
-require('dotenv').config();
 const { Pool } = require('pg');
-const fs = require('fs');
-const { promisify } = require('util');
 
-const readFile = promisify(fs.readFile);
+const { NODE_ENV } = process.env;
 
-const setupConfigFile = async () => {
-  if (fs.exists(`${process.cwd()}/migrations/config.js`)) {
-    const configFile = await readFile(`${process.cwd()}/migrations/config.js`, 'utf8');
-    return configFile;
-  }
-};
+switch (NODE_ENV) {
+  case 'test':
+    require('dotenv').config({ path: `${process.cwd()}/.env.test` });
+    break;
+  case 'development':
+    require('dotenv').config({ path: `${process.cwd()}/.env.development` });
+    break;
+  default:
+    require('dotenv').config();
+    break;
+}
+
+const { DATABASE_URL } = process.env;
 
 class Database {
   constructor(connectionString) {
@@ -82,4 +86,4 @@ class Database {
   }
 }
 
-module.exports = new Database(configFile.databaseUrl);
+module.exports = new Database(DATABASE_URL);
