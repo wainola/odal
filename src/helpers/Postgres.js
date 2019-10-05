@@ -16,8 +16,6 @@ switch (NODE_ENV) {
 
 const { DATABASE_URL } = process.env;
 
-console.log('DATABASE', DATABASE_URL);
-
 class Database {
   constructor(connectionString) {
     if (Database.exists) {
