@@ -7,6 +7,12 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Reader",
+      "program": "${workspaceFolder}/src/helpers/Reader.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Base",
       "program": "${workspaceFolder}/src/helpers/Base.js",
       "env": {

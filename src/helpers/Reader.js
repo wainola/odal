@@ -5,6 +5,10 @@ const Logger = require('./Logger');
 const Postgres = require('./Postgres');
 
 class Reader extends Base {
+  constructor(databaseInstance) {
+    super(databaseInstance);
+  }
+
   async getStatus() {
     return this.getRegistryTableInfo()
       .then(data => {
@@ -38,7 +42,7 @@ class Reader extends Base {
     return Postgres.connect().then(async connected => {
       if (!connected.error) {
         try {
-          const query = await Postgres.queryToExec(migration);
+          const query = await this.databaseInstance.queryToExec(migration);
           return query;
         } catch (err) {
           return err;
@@ -73,35 +77,35 @@ class Reader extends Base {
     }
   }
 
+  async returnMigrationResults(data) {
+    return Promise.all(
+      data
+        .filter(item => !item.migratedat)
+        .map(async migration => {
+          const isMigrated = await this.runSingleMigration(migration.migration_name, 'up');
+          const updateRegistryTable = await this.updateRegistryTable(migration.migration_name);
+
+          return {
+            response: isMigrated,
+            file: migration.migration_name,
+            update: updateRegistryTable
+          };
+        })
+    );
+  }
+
   async migrate() {
     return this.getRegistryTableInfo()
-      .then(async data => {
-        const migrationResult = [];
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of data) {
-          if (!item.migratedat) {
-            const migrated = await this.runSingleMigration(item.migration_name, 'up');
-
-            const updateRegistryTable = await this.updateRegistryTable(item.migration_name);
-
-            migrationResult.push({
-              response: migrated,
-              file: item.migration_name,
-              update: updateRegistryTable
-            });
-          }
-        }
-        return migrationResult;
-      })
-      .then(migrationResult =>
+      .then(data => this.returnMigrationResults(data))
+      .then(async migrationResult => {
         migrationResult.forEach(item => {
           if (item.response.error) {
             Logger.printError(`Error on migration the file ${item.file}: ${item.response.meta}`);
           } else {
             Logger.printInfo(`Success on migrating the file ${item.file}`);
           }
-        })
-      )
+        });
+      })
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
   }
@@ -135,7 +139,8 @@ class Reader extends Base {
   }
 
   async registryUpdate() {
-    return Postgres.connect()
+    return this.databaseInstance
+      .connect()
       .then(() => this.readDir(this.registryPath))
       .then(async contents => {
         const registryArray = [];
@@ -162,4 +167,26 @@ class Reader extends Base {
   }
 }
 
-module.exports = new Reader();
+module.exports = new Reader(Postgres);
+
+const data = [
+  {
+    migration_name: '1572411302_migration1.js',
+    createdat: '2019-10-30T04:55:02.000Z',
+    migratedat: null
+  },
+  {
+    migration_name: '1572411338_migration2.js',
+    createdat: '2019-10-30T04:55:38.000Z',
+    migratedat: null
+  },
+  {
+    migration_name: '1572411341_migration3.js',
+    createdat: '2019-10-30T04:55:41.000Z',
+    migratedat: null
+  }
+];
+
+// const reader = new Reader(Postgres);
+// reader.getRegistryTableInfo = async () => data;
+// reader.migrate().then(r => console.log('r', r));
