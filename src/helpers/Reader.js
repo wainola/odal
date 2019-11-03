@@ -42,7 +42,6 @@ class Reader extends Base {
       if (!connected.error) {
         try {
           const query = await this.databaseInstance.queryToExec(migration);
-          console.log('query:', query);
           return query;
         } catch (err) {
           return err;
@@ -138,8 +137,7 @@ class Reader extends Base {
 
   async undo() {
     return this.getRegistryTableInfo()
-      .then(data => this.returnMigrationResults(data, 'down'))
-      .then(response => console.log('response', response))
+      .then(data => this.returnMigregistryUpdaterationResults(data, 'down'))
       .then(() => Logger.printInfo('Success on removing all the tables!'))
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
