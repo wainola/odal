@@ -38,4 +38,6 @@ program.command('registry:update').action(Odal.registryUpdate);
 // CREATE PGEXTENSION IF NEEDED
 program.command('postgres:pgcrypto').action(Odal.createPgCrypto);
 
+program.command('restore').action(Odal.restore);
+
 program.parse(process.argv);

@@ -198,6 +198,37 @@ class Reader extends Base {
     }, []);
     // console.log('formated', formatDates);
   }
+
+  async restoreMigrations() {
+    return this.readDir(`${this.registryPath}`)
+      .then(contents => {
+        const migrationResults = Promise.all(
+          contents.map(async item => {
+            const isMigrated = await this.runSingleMigration(item, 'up');
+
+            return {
+              isMigrated,
+              migration_name: item
+            };
+          })
+        );
+        return migrationResults;
+      })
+      .then(async results => {
+        let migrationtResults = [];
+        for await (const item of results) {
+          const r = await this.databaseInstance.queryToExec(
+            `INSERT INTO REGISTRY (MIGRATION_NAME, CREATEDAT) VALUES('${
+              item.migration_name
+            }.js', '${moment().format()}');`
+          );
+          migrationtResults = [...migrationtResults, { success: r.success, ...item }];
+        }
+        return migrationtResults;
+      })
+      .then(dataRestored => console.log(dataRestored))
+      .catch(err => console.error(err));
+  }
 }
 
 module.exports = new Reader(Postgres);
