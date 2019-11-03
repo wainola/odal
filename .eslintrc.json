@@ -3,6 +3,8 @@
   "plugins": ["prettier"],
   "rules": {
     "prettier/prettier": ["error"],
-    "consistent-return": "off"
+    "consistent-return": "off",
+    "class-methods-use-this": "off",
+    "no-param-reassign": "off"
   }
 }

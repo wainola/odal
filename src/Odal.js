@@ -55,6 +55,10 @@ class Odal {
     return Reader.undo();
   }
 
+  static async undoLast() {
+    return Reader.undoLast();
+  }
+
   static async removeRegistryTable() {
     return Reader.removeRegistryTable()
       .then(data => Logger.printSuccess(data))

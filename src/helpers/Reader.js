@@ -3,6 +3,7 @@ const moment = require('moment');
 const Base = require('./Base');
 const Logger = require('./Logger');
 const Postgres = require('./Postgres');
+const { partition, sortData } = require('../utils');
 
 class Reader extends Base {
   constructor(databaseInstance) {
@@ -82,6 +83,7 @@ class Reader extends Base {
           data
             .filter(item => !item.migratedat)
             .map(async migration => {
+              console.log('migration', migration);
               const isMigrated = await this.runSingleMigration(
                 migration.migration_name,
                 migrationType
@@ -122,8 +124,18 @@ class Reader extends Base {
     }
   }
 
+  returnSortedData(data) {
+    const processDataToSort = data.map(item => ({
+      ...item,
+      fileTimestamp: item.migration_name.split('_')[0]
+    }));
+    const dataSorted = sortData(processDataToSort);
+    return dataSorted;
+  }
+
   async migrate() {
     return this.getRegistryTableInfo()
+      .then(dataNotSorted => this.returnSortedData(dataNotSorted))
       .then(data => this.returnMigrationResults(data, 'up'))
       .then(async migrationResult => {
         migrationResult.forEach(item => {
@@ -146,32 +158,45 @@ class Reader extends Base {
       .catch(err => Logger.printError(err));
   }
 
-  async registryUpdate() {
-    return this.databaseInstance
-      .connect()
-      .then(() => this.readDir(this.registryPath))
-      .then(async contents => {
-        const registryArray = [];
-        if (Array.isArray(contents)) {
-          for (const content of contents) {
-            try {
-              const query = `INSERT INTO registry (migration_name, createdat) VALUES ('${content}', '${moment().format()}');`;
-              const q = await Postgres.queryToExec(query);
-              registryArray.push({ success: q.success, filename: content });
-            } catch (err) {
-              return err;
-            }
-          }
+  async undoLast() {
+    return this.getRegistryTableInfo()
+      .then(data => this.processRegistryTableData(data))
+      .then(dataProcessed => {
+        console.log(dataProcessed);
+      });
+  }
+
+  async processRegistryTableData(data) {
+    console.log('data::', data);
+    const [_, migrated] = this.dataPartition(data);
+    if (migrated.length) {
+      return this.computeDateOnMigrationsToResolveLast(migrated);
+    }
+  }
+
+  dataPartition(data) {
+    return partition(data);
+  }
+
+  computeDateOnMigrationsToResolveLast(migratedArr) {
+    const formatDates = migratedArr.reduce((acc, item) => {
+      const [year, month, day, hour, minute, seconds] = moment(item.migratedat)
+        .format('YYYY MM DD HH mm ss')
+        .split(' ');
+      acc = [
+        ...acc,
+        {
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          seconds
         }
-        return registryArray;
-      })
-      .then(queryResult => {
-        queryResult.forEach(item =>
-          Logger.printSuccess(`${item.filename} succesfully addded to the registry table`)
-        );
-        return process.exit();
-      })
-      .catch(err => Logger.printError(err));
+      ];
+      return acc;
+    }, []);
+    // console.log('formated', formatDates);
   }
 }
 
