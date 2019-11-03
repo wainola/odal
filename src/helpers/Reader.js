@@ -37,9 +37,8 @@ class Reader extends Base {
     return this.registryPath;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async executeQueryMigration(migration) {
-    return Postgres.connect().then(async connected => {
+    return this.databaseInstance.connect().then(async connected => {
       if (!connected.error) {
         try {
           const query = await this.databaseInstance.queryToExec(migration);
@@ -51,7 +50,6 @@ class Reader extends Base {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async runUpMigration(up) {
     return this.executeQueryMigration(up);
   }
@@ -168,25 +166,3 @@ class Reader extends Base {
 }
 
 module.exports = new Reader(Postgres);
-
-const data = [
-  {
-    migration_name: '1572411302_migration1.js',
-    createdat: '2019-10-30T04:55:02.000Z',
-    migratedat: null
-  },
-  {
-    migration_name: '1572411338_migration2.js',
-    createdat: '2019-10-30T04:55:38.000Z',
-    migratedat: null
-  },
-  {
-    migration_name: '1572411341_migration3.js',
-    createdat: '2019-10-30T04:55:41.000Z',
-    migratedat: null
-  }
-];
-
-// const reader = new Reader(Postgres);
-// reader.getRegistryTableInfo = async () => data;
-// reader.migrate().then(r => console.log('r', r));

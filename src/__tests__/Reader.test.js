@@ -1,26 +1,36 @@
 const Reader = require('../helpers/Reader');
-const Base = require('../helpers/Base');
 const Postgres = require('../helpers/Postgres');
 
-jest.mock('../helpers/Base.js');
 jest.mock('../helpers/Postgres.js');
 
+const data = [
+  {
+    migration_name: '1572411302_migration1.js',
+    createdat: '2019-10-30T04:55:02.000Z',
+    migratedat: null
+  },
+  {
+    migration_name: '1572411341_migration3.js',
+    createdat: '2019-10-30T04:55:41.000Z',
+    migratedat: null
+  },
+  {
+    migration_name: '1572411338_migration2.js',
+    createdat: '2019-10-30T04:55:38.000Z',
+    migratedat: null
+  }
+];
+
 describe('Reader', () => {
-  it('Should have all the attributes as being instance of Base class', () => {
-    Base.getRegistryTableInfo.mockImplementation(() =>
-      Promise.resolve([
-        { migration_name: 'migration 1', createdat: new Date(), migratedat: new Date() },
-        { migration_name: 'migration 2', createdat: new Date(), migratedat: new Date() },
-        { migration_name: 'migration 3', createdat: new Date(), migratedat: new Date() }
-      ])
-    );
+  it(' <returnMigrationResults> Should process the migration results, process the array of adata and return the state of the migrations', async () => {
+    Reader.runSingleMigration = jest.fn(() => Promise.resolve({ isMigrated: true }));
+    Reader.updateRegistryTable = jest.fn(() => Promise.resolve({ success: true }));
+
+    const expectedKeys = ['response', 'file', 'update'];
+
+    const r = await Reader.returnMigrationResults(data);
+
+    const keys = r.map(item => Object.keys(item));
+    keys.forEach(e => expect(e).toEqual(expectedKeys));
   });
-  it('Should return the info of the data of the Registry Table (getStatus method)', async () => {});
-  it('Should execute a single migration', async () => {});
-  it('Should run a up migration', async () => {});
-  it('Should run a down migration', async () => {});
-  it('Should run a single migration, provided a Migration file and a type', async () => {});
-  it('Should run all the migrations', async () => {});
-  it('Should undo the migrations', async () => {});
-  it('Should update the Registry table', async () => {});
 });
