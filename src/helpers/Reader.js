@@ -42,6 +42,7 @@ class Reader extends Base {
       if (!connected.error) {
         try {
           const query = await this.databaseInstance.queryToExec(migration);
+          console.log('query:', query);
           return query;
         } catch (err) {
           return err;
@@ -75,26 +76,53 @@ class Reader extends Base {
     }
   }
 
-  async returnMigrationResults(data) {
-    return Promise.all(
-      data
-        .filter(item => !item.migratedat)
-        .map(async migration => {
-          const isMigrated = await this.runSingleMigration(migration.migration_name, 'up');
-          const updateRegistryTable = await this.updateRegistryTable(migration.migration_name);
+  async returnMigrationResults(data, migrationType) {
+    switch (migrationType) {
+      case 'up':
+        return Promise.all(
+          data
+            .filter(item => !item.migratedat)
+            .map(async migration => {
+              const isMigrated = await this.runSingleMigration(
+                migration.migration_name,
+                migrationType
+              );
+              const updateRegistryTable = await this.updateRegistryTable(migration.migration_name);
 
-          return {
-            response: isMigrated,
-            file: migration.migration_name,
-            update: updateRegistryTable
-          };
-        })
-    );
+              return {
+                response: isMigrated,
+                file: migration.migration_name,
+                update: updateRegistryTable
+              };
+            })
+        );
+      case 'down':
+        return Promise.all(
+          data.map(async migration => {
+            const isMigrated = await this.runSingleMigration(
+              migration.migration_name,
+              migrationType
+            );
+            const updateRegistryTable = await this.updateRegistryTable(
+              migration.migration_name,
+              migrationType
+            );
+
+            return {
+              response: isMigrated,
+              file: migration.migration_name,
+              update: updateRegistryTable
+            };
+          })
+        );
+      default:
+        break;
+    }
   }
 
   async migrate() {
     return this.getRegistryTableInfo()
-      .then(data => this.returnMigrationResults(data))
+      .then(data => this.returnMigrationResults(data, 'up'))
       .then(async migrationResult => {
         migrationResult.forEach(item => {
           if (item.response.error) {
@@ -110,27 +138,8 @@ class Reader extends Base {
 
   async undo() {
     return this.getRegistryTableInfo()
-      .then(async data => {
-        const migratedTables = data
-          .filter(item => item.migratedat)
-          .map(elem => elem.migration_name)
-          .reverse();
-        return migratedTables;
-      })
-      .then(async migratedTables => {
-        const migrationResult = [];
-        for (const migration of migratedTables) {
-          const migrated = await this.runSingleMigration(migration, 'down');
-          migrationResult.push(migrated);
-        }
-        const success = migrationResult.every(item => item.success);
-        return success;
-      })
-      .then(success => {
-        if (success) {
-          return this.updateRegistry();
-        }
-      })
+      .then(data => this.returnMigrationResults(data, 'down'))
+      .then(response => console.log('response', response))
       .then(() => Logger.printInfo('Success on removing all the tables!'))
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
