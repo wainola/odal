@@ -86,7 +86,10 @@ class Reader extends Base {
                 migration.migration_name,
                 migrationType
               );
-              const updateRegistryTable = await this.updateRegistryTable(migration.migration_name);
+              const updateRegistryTable = await this.updateRegistryTable(
+                migration.migration_name,
+                migrationType
+              );
 
               return {
                 response: isMigrated,
@@ -137,7 +140,7 @@ class Reader extends Base {
 
   async undo() {
     return this.getRegistryTableInfo()
-      .then(data => this.returnMigregistryUpdaterationResults(data, 'down'))
+      .then(data => this.returnMigrationResults(data, 'down'))
       .then(() => Logger.printInfo('Success on removing all the tables!'))
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
