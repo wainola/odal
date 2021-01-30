@@ -7,8 +7,31 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceFolder}/src/helpers/Base.js"
+      "name": "Reader",
+      "program": "${workspaceFolder}/src/helpers/Reader.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Base",
+      "program": "${workspaceFolder}/src/helpers/Base.js",
+      "env": {
+        "NODE_ENV": "test",
+        "DATABASE_URL": "postgresql://postgres:password@localhost:5432/odal_db"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Writter",
+      "program": "${workspaceFolder}/src/Writer.js"
+    },
+
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Odal",
+      "program": "${workspaceFolder}/src/Odal.js"
     }
   ]
 }

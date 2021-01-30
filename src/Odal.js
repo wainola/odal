@@ -55,6 +55,10 @@ class Odal {
     return Reader.undo();
   }
 
+  static async undoLast() {
+    return Reader.undoLast();
+  }
+
   static async removeRegistryTable() {
     return Reader.removeRegistryTable()
       .then(data => Logger.printSuccess(data))
@@ -81,6 +85,10 @@ class Odal {
       .then(() => Logger.printSuccess('Success on creating pgcrypto extension'))
       .then(() => process.exit())
       .catch(err => Logger.printError('Error on creating pgcrypto extension'));
+  }
+
+  static async restore() {
+    return Reader.restoreMigrations();
   }
 }
 

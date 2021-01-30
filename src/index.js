@@ -4,8 +4,6 @@ const Odal = require('./Odal');
 
 program.description('Migration tool');
 
-program.command('test').action(Odal.test);
-
 program.command('init').action(Odal.init);
 
 program.command('postgres').action(Odal.postgres);
@@ -26,7 +24,7 @@ program.command('migrate').action(Odal.migrate);
 program.command('undo:all').action(Odal.undo);
 
 // REMOVE LAST MIGRATION
-program.command('remove:last').action(Odal.removeLast);
+program.command('undo:last').action(Odal.undoLast);
 
 // REMOVE REGISTRY TABLE
 program.command('remove:registry').action(Odal.removeRegistryTable);
@@ -39,5 +37,7 @@ program.command('registry:update').action(Odal.registryUpdate);
 
 // CREATE PGEXTENSION IF NEEDED
 program.command('postgres:pgcrypto').action(Odal.createPgCrypto);
+
+program.command('restore').action(Odal.restore);
 
 program.parse(process.argv);

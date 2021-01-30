@@ -81,6 +81,42 @@ class Utils {
     const filteredFilenames = filenames.filter(e => e !== '');
     return filteredFilenames;
   }
+
+  static partition(data) {
+    return data.reduce(
+      (acc, item) => {
+        if (!item.migratedat) {
+          acc[0] = [...acc[0], item];
+        } else {
+          acc[1] = [...acc[1], item];
+        }
+        return acc;
+      },
+      [[], []]
+    );
+  }
+
+  static sortData(data) {
+    return data.sort((a, b) => {
+      if (a.fileTimestamp < b.fileTimestamp) {
+        return -1;
+      }
+      if (a.fileTimestamp > b.fileTimestamp) {
+        return 1;
+      }
+      return 0;
+    });
+  }
+
+  static sortYears(yearsArr, datesTree) {}
+
+  static sortMonths(monthsArr, datesTree) {}
+
+  static sortDays(daysArr, datesTree) {}
+
+  static sortHours(hoursArr, datesTree) {}
+
+  static sortMinutes(minutesArr, datesTree) {}
 }
 
 module.exports = Utils;

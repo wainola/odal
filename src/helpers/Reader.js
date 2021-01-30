@@ -3,8 +3,13 @@ const moment = require('moment');
 const Base = require('./Base');
 const Logger = require('./Logger');
 const Postgres = require('./Postgres');
+const { partition, sortData } = require('../utils');
 
 class Reader extends Base {
+  constructor(databaseInstance) {
+    super(databaseInstance);
+  }
+
   async getStatus() {
     return this.getRegistryTableInfo()
       .then(data => {
@@ -33,12 +38,11 @@ class Reader extends Base {
     return this.registryPath;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async executeQueryMigration(migration) {
-    return Postgres.connect().then(async connected => {
+    return this.databaseInstance.connect().then(async connected => {
       if (!connected.error) {
         try {
-          const query = await Postgres.queryToExec(migration);
+          const query = await this.databaseInstance.queryToExec(migration);
           return query;
         } catch (err) {
           return err;
@@ -47,7 +51,6 @@ class Reader extends Base {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async runUpMigration(up) {
     return this.executeQueryMigration(up);
   }
@@ -73,93 +76,159 @@ class Reader extends Base {
     }
   }
 
+  async returnMigrationResults(data, migrationType) {
+    switch (migrationType) {
+      case 'up':
+        return Promise.all(
+          data
+            .filter(item => !item.migratedat)
+            .map(async migration => {
+              console.log('migration', migration);
+              const isMigrated = await this.runSingleMigration(
+                migration.migration_name,
+                migrationType
+              );
+              const updateRegistryTable = await this.updateRegistryTable(
+                migration.migration_name,
+                migrationType
+              );
+
+              return {
+                response: isMigrated,
+                file: migration.migration_name,
+                update: updateRegistryTable
+              };
+            })
+        );
+      case 'down':
+        return Promise.all(
+          data.map(async migration => {
+            const isMigrated = await this.runSingleMigration(
+              migration.migration_name,
+              migrationType
+            );
+            const updateRegistryTable = await this.updateRegistryTable(
+              migration.migration_name,
+              migrationType
+            );
+
+            return {
+              response: isMigrated,
+              file: migration.migration_name,
+              update: updateRegistryTable
+            };
+          })
+        );
+      default:
+        break;
+    }
+  }
+
+  returnSortedData(data) {
+    const processDataToSort = data.map(item => ({
+      ...item,
+      fileTimestamp: item.migration_name.split('_')[0]
+    }));
+    const dataSorted = sortData(processDataToSort);
+    return dataSorted;
+  }
+
   async migrate() {
     return this.getRegistryTableInfo()
-      .then(async data => {
-        const migrationResult = [];
-        // eslint-disable-next-line no-restricted-syntax
-        for (const item of data) {
-          if (!item.migratedat) {
-            const migrated = await this.runSingleMigration(item.migration_name, 'up');
-
-            const updateRegistryTable = await this.updateRegistryTable(item.migration_name);
-
-            migrationResult.push({
-              response: migrated,
-              file: item.migration_name,
-              update: updateRegistryTable
-            });
-          }
-        }
-        return migrationResult;
-      })
-      .then(migrationResult =>
+      .then(dataNotSorted => this.returnSortedData(dataNotSorted))
+      .then(data => this.returnMigrationResults(data, 'up'))
+      .then(async migrationResult => {
         migrationResult.forEach(item => {
           if (item.response.error) {
             Logger.printError(`Error on migration the file ${item.file}: ${item.response.meta}`);
           } else {
             Logger.printInfo(`Success on migrating the file ${item.file}`);
           }
-        })
-      )
+        });
+      })
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
   }
 
   async undo() {
     return this.getRegistryTableInfo()
-      .then(async data => {
-        const migratedTables = data
-          .filter(item => item.migratedat)
-          .map(elem => elem.migration_name)
-          .reverse();
-        return migratedTables;
-      })
-      .then(async migratedTables => {
-        const migrationResult = [];
-        for (const migration of migratedTables) {
-          const migrated = await this.runSingleMigration(migration, 'down');
-          migrationResult.push(migrated);
-        }
-        const success = migrationResult.every(item => item.success);
-        return success;
-      })
-      .then(success => {
-        if (success) {
-          return this.updateRegistry();
-        }
-      })
+      .then(data => this.returnMigrationResults(data, 'down'))
       .then(() => Logger.printInfo('Success on removing all the tables!'))
       .then(() => process.exit())
       .catch(err => Logger.printError(err));
   }
 
-  async registryUpdate() {
-    return Postgres.connect()
-      .then(() => this.readDir(this.registryPath))
-      .then(async contents => {
-        const registryArray = [];
-        if (Array.isArray(contents)) {
-          for (const content of contents) {
-            try {
-              const query = `INSERT INTO registry (migration_name, createdat) VALUES ('${content}', '${moment().format()}');`;
-              const q = await Postgres.queryToExec(query);
-              registryArray.push({ success: q.success, filename: content });
-            } catch (err) {
-              return err;
-            }
-          }
+  async undoLast() {
+    return this.getRegistryTableInfo()
+      .then(data => this.processRegistryTableData(data))
+      .then(dataProcessed => {
+        console.log(dataProcessed);
+      });
+  }
+
+  async processRegistryTableData(data) {
+    console.log('data::', data);
+    const [_, migrated] = this.dataPartition(data);
+    if (migrated.length) {
+      return this.computeDateOnMigrationsToResolveLast(migrated);
+    }
+  }
+
+  dataPartition(data) {
+    return partition(data);
+  }
+
+  computeDateOnMigrationsToResolveLast(migratedArr) {
+    const formatDates = migratedArr.reduce((acc, item) => {
+      const [year, month, day, hour, minute, seconds] = moment(item.migratedat)
+        .format('YYYY MM DD HH mm ss')
+        .split(' ');
+      acc = [
+        ...acc,
+        {
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          seconds
         }
-        return registryArray;
-      })
-      .then(queryResult => {
-        queryResult.forEach(item =>
-          Logger.printSuccess(`${item.filename} succesfully addded to the registry table`)
+      ];
+      return acc;
+    }, []);
+    // console.log('formated', formatDates);
+  }
+
+  async restoreMigrations() {
+    return this.readDir(`${this.registryPath}`)
+      .then(contents => {
+        const migrationResults = Promise.all(
+          contents.map(async item => {
+            const isMigrated = await this.runSingleMigration(item, 'up');
+
+            return {
+              isMigrated,
+              migration_name: item
+            };
+          })
         );
-        return process.exit();
+        return migrationResults;
       })
-      .catch(err => Logger.printError(err));
+      .then(async results => {
+        let migrationtResults = [];
+        for await (const item of results) {
+          const r = await this.databaseInstance.queryToExec(
+            `INSERT INTO REGISTRY (MIGRATION_NAME, CREATEDAT) VALUES('${
+              item.migration_name
+            }.js', '${moment().format()}');`
+          );
+          migrationtResults = [...migrationtResults, { success: r.success, ...item }];
+        }
+        return migrationtResults;
+      })
+      .then(dataRestored => console.log(dataRestored))
+      .catch(err => console.error(err));
   }
 }
 
-module.exports = new Reader();
+module.exports = new Reader(Postgres);

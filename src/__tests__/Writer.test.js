@@ -1,29 +1,51 @@
-const fs = require('fs');
-const { promisify } = require('util');
-const Writer = require('../Writer');
-const Database = require('../services/database');
+const moment = require('moment');
+const Writer = require('../helpers/Writer');
+const Postgres = require('../helpers/Postgres');
 
-let WriterInstance;
-
-const registryDirPath = `${process.cwd()}/src/__tests__/registry`;
-
-const mkdir = promisify(fs.mkdir);
-const writeFile = promisify(fs.writeFile);
+jest.mock('../helpers/Postgres.js');
 
 describe('Writer', () => {
-  beforeAll(() => {
-    WriterInstance = new Writer(Database);
+  it('Should setup correctly the data for the instance', () => {
+    const expectedKeys = [
+      'registryPath',
+      'readFile',
+      'exists',
+      'writeFile',
+      'mkdir',
+      'readDir',
+      'databaseInstance'
+    ];
+    expect(Object.keys(Writer)).toEqual(expectedKeys);
   });
-  afterAll(() => {});
+  it('Should write data when there is a filename and a table name provided', async () => {
+    Writer.writeFile = jest.fn(() => Promise.resolve({}));
 
-  it('has to be an instance of Base Class and has all the properties', async () => {
-    const expectedKeys = ['registryPath', 'readFile', 'exists', 'writeFile', 'mkdir', 'database'];
-    expect(Object.keys(WriterInstance)).toEqual(expectedKeys);
+    const filename = `${moment().unix()}_foo_table`;
+    const tableName = 'FOO';
+    const r = await Writer.writeData(filename, tableName);
+
+    expect(r.error).toBe(false);
   });
+  it('Should write a file when there is a filename and a table name provided', async () => {
+    Postgres.queryToExec.mockImplementation(data => Promise.resolve({ success: true, data }));
 
-  it('write data', async () => {
-    mkdir(registryDirPath)
-      .then(() => writeFile(`${registryDirPath}/odal_index`, '', { flag: 'wx' }))
-      .catch(err => console.log('err:', err));
+    Writer.writeFile = jest.fn(() => Promise.resolve({}));
+
+    const filename = `${moment().unix()}_foo_table`;
+    const tableName = 'FOO';
+    const r = await Writer.writeMigrationFile(tableName, filename);
+    const { success, error } = r;
+
+    expect(success).toBe(true);
+    expect(error).toBe(false);
+  });
+  it('Should return error true if there is a problem on writing the file', async () => {
+    Writer.writeFile = jest.fn(() => Promise.reject({}));
+
+    const filename = `${moment().unix()}__baz_table`;
+    const tableName = 'BAZ';
+    const r = await Writer.writeData(filename, tableName);
+    const { error } = r;
+    expect(error).toBe(true);
   });
 });

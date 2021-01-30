@@ -53,14 +53,27 @@ class Base {
       .catch(err => err);
   }
 
-  async updateRegistryTable(content) {
+  async updateRegistryTable(content, migrationType) {
     return this.databaseInstance.connect().then(async () => {
-      try {
-        const query = `UPDATE registry set migratedat='${moment().format()}' WHERE migration_name='${content}';`;
-        const qToExec = await this.databaseInstance.queryToExec(query);
-        return qToExec;
-      } catch (err) {
-        return err;
+      switch (migrationType) {
+        case 'up':
+          try {
+            const query = `UPDATE registry set migratedat='${moment().format()}' WHERE migration_name='${content}';`;
+            const qToExec = await this.databaseInstance.queryToExec(query);
+            return qToExec;
+          } catch (error) {
+            return error;
+          }
+        case 'down':
+          try {
+            const query = 'UPDATE REGISTRY SET MIGRATEDAT=NULL;';
+            const qToExec = await this.databaseInstance.queryToExec(query);
+            return qToExec;
+          } catch (error) {
+            return error;
+          }
+        default:
+          break;
       }
     });
   }

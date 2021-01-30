@@ -1,0 +1,11 @@
+coverage
+src/__tests__
+jest.config.js
+.prettierrc
+.eslintrc.json
+.vscode
+docker-compose.yml
+docker-compose.develop.yml
+Dockerfile
+config.copy.js
+migrations
