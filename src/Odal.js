@@ -82,6 +82,8 @@ class Odal {
       .then(() => process.exit())
       .catch(err => Logger.printError('Error on creating pgcrypto extension'));
   }
+
+  static async status() {}
 }
 
 module.exports = Odal;
